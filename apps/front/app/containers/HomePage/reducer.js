@@ -12,11 +12,12 @@ import { CHANGE_USERNAME } from './constants';
 
 // The initial state of the App
 export const initialState = {
-  username: '',
+  phone: '',
+  locale: true,
 };
 
 /* eslint-disable default-case, no-param-reassign */
-const homeReducer = (state = initialState, action) =>
+const subscriberFormReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case CHANGE_USERNAME:
@@ -26,4 +27,4 @@ const homeReducer = (state = initialState, action) =>
     }
   });
 
-export default homeReducer;
+export default subscriberFormReducer;
