@@ -14,7 +14,12 @@ export function* getService(data) {
     const response = yield call(request, requestURL);
     yield put(serviceLoaded(response));
   } catch (err) {
-    yield put(serviceRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(serviceRequestingError(err));
+    }
   }
 }
 
@@ -26,7 +31,12 @@ export function* deleteService(data) {
     console.log(`Service {${data.id}} successfully removed!`);
     yield put(push('/services'));
   } catch (err) {
-    yield put(serviceRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(serviceRequestingError(err));
+    }
   }
 }
 

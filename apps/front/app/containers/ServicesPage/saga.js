@@ -1,6 +1,7 @@
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects';
+import { push } from 'react-router-redux';
 import request from 'utils/request';
-import { LOAD_SERVICES, REMOVE_SERVICE, ENABLE_SERVICE } from './constants';
+import { ENABLE_SERVICE, LOAD_SERVICES, REMOVE_SERVICE } from './constants';
 import {
   loadServices,
   servicesLoaded,
@@ -17,7 +18,12 @@ export function* getServices() {
     console.log('Loaded services => ', services);
     yield put(servicesLoaded(services));
   } catch (err) {
-    yield put(servicesRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(servicesRequestingError(err));
+    }
   }
 }
 
@@ -29,7 +35,12 @@ export function* deleteService(data) {
     console.log(`Service {${data.id}} successfully removed!`);
     yield put(loadServices());
   } catch (err) {
-    yield put(servicesRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(servicesRequestingError(err));
+    }
   }
 }
 
@@ -41,19 +52,20 @@ export function* enableServiceForSubscriber(data) {
   try {
     yield call(request, requestURL, { method: 'PUT' });
     console.log(
-      `Service {${data.data.service_id}} successfully enabled for {${
+      `Service {${data.data.service_id}} successfully removed for subscriber {${
         data.data.subscriber_id
       }}!`,
     );
-    yield put(loadServices());
+    yield put(push(`/subscribers/${data.data.subscriber_id}`));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(servicesRequestingError(err));
   }
 }
 
-/**
- * Root saga manages watcher lifecycle
- */
 export default function* servicesData() {
   yield takeLatest(LOAD_SERVICES, getServices);
   yield takeEvery(REMOVE_SERVICE, deleteService);

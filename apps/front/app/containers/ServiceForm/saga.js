@@ -1,11 +1,8 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import request from 'utils/request';
+import { push } from 'react-router-redux';
 import { UPDATE_SERVICE, ADD_SERVICE, LOAD_SERVICE } from './constants';
-import {
-  serviceLoaded,
-  loadService,
-  serviceRequestingError,
-} from './actions';
+import { serviceLoaded, loadService, serviceRequestingError } from './actions';
 
 export function* addService(data) {
   // Select username from store
@@ -41,7 +38,12 @@ export function* changeService(data) {
     });
     yield put(loadService(backId));
   } catch (err) {
-    yield put(serviceRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(serviceRequestingError(err));
+    }
   }
 }
 
@@ -55,7 +57,12 @@ export function* getService(data) {
     const response = yield call(request, requestURL);
     yield put(serviceLoaded(response));
   } catch (err) {
-    yield put(serviceRequestingError(err));
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    } else {
+      yield put(serviceRequestingError(err));
+    }
   }
 }
 

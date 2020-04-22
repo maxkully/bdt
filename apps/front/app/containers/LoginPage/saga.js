@@ -1,38 +1,32 @@
-/**
- * Gets the repositories of the user from Github
- */
-
-import { call, put, select, takeLatest } from 'redux-saga/effects';
-import { LOAD_REPOS } from 'containers/App/constants';
-import { reposLoaded, repoLoadingError } from 'containers/App/actions';
-
+import { call, put, takeLatest, all } from 'redux-saga/effects';
 import request from 'utils/request';
-// import { makeSelectUsername } from 'containers/SubscribersPage/selectors';
+import { push } from 'react-router-redux';
+import { LOG_IN } from './constants';
+import { loginSuccess, loginFailed } from './actions';
 
-/**
- * Github repos request/response handler
- */
-export function* getRepos() {
-  // Select username from store
-  // const username = yield select(makeSelectUsername());
-  // const requestURL = `https://api.github.com/users/${username}/repos?type=all&sort=updated`;
-  //
-  // try {
-  //   // Call our request helper (see 'utils/request')
-  //   const repos = yield call(request, requestURL);
-  //   yield put(reposLoaded(repos, username));
-  // } catch (err) {
-  //   yield put(repoLoadingError(err));
-  // }
+export function* checkCredentials(data) {
+  const requestURL = `http://localhost/api/auth/login`;
+
+  try {
+    console.log('checkCredentials with body => ', data);
+    const response = yield call(request, requestURL, {
+      method: 'POST',
+      body: JSON.stringify(data.credentials),
+    });
+    console.log(`Login with '${response.token}' successfully`, response);
+    if (response.token) {
+      localStorage.setItem('jwt', response.token);
+      yield put(push('/'));
+      yield put(loginSuccess(response));
+    } else {
+      yield put(loginFailed('Could not received JWT token'));
+    }
+  } catch (err) {
+    console.log('[Error]', err);
+    yield put(loginFailed(err));
+  }
 }
 
-/**
- * Root saga manages watcher lifecycle
- */
-export default function* githubData() {
-  // Watches for LOAD_REPOS actions and calls getRepos when one comes in.
-  // By using `takeLatest` only the result of the latest API call is applied.
-  // It returns task descriptor (just like fork) so we can continue execution
-  // It will be cancelled automatically on component unmount
-  yield takeLatest(LOAD_REPOS, getRepos);
+export default function* subscriberData() {
+  yield all([takeLatest(LOG_IN, checkCredentials)]);
 }

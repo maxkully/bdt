@@ -1,5 +1,5 @@
 import React, { useEffect, memo } from 'react';
-import {Link, withRouter} from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { FormattedMessage } from 'react-intl';
@@ -32,39 +32,46 @@ export function ServiceCard({
 
   useEffect(() => onInitPage(match.params.id), []);
 
-  const users = service.users.map(user => {
-    return <li>
-      <span><Link to={`/subscribers/${user.id}`}>{user.phone}</Link></span>
+  const users = service.users.map(user => (
+    <li>
+      <span>
+        <Link to={`/subscribers/${user.id}`}>{user.phone}</Link>
+      </span>
       <span> (Enabled at {user.created_at})</span>
     </li>
-  });
+  ));
 
   let content = '';
   if (service) {
-    content = <div>
-      <div>Details</div>
-      <ul>
-        <li>
-          <span>ID: </span><span>{service.id}</span>
-        </li>
-        <li>
-          <span>Title: </span><span>{service.title}</span>
-        </li>
-        <li>
-          <span>Created at: </span><span>{service.created_at}</span>
-        </li>
-        <li>
-          <Link to={`/services/${service.id}/edit`}>Edit</Link>
-        </li>
-        <li>
-          <button onClick={removeServiceClick.bind(this, service.id)}>Delete</button>
-        </li>
-      </ul>
-      <div>Users:</div>
-      <ul>
-        {users}
-      </ul>
-    </div>
+    content = (
+      <div>
+        <div>Details</div>
+        <ul>
+          <li>
+            <span>ID: </span>
+            <span>{service.id}</span>
+          </li>
+          <li>
+            <span>Title: </span>
+            <span>{service.title}</span>
+          </li>
+          <li>
+            <span>Created at: </span>
+            <span>{service.created_at}</span>
+          </li>
+          <li>
+            <Link to={`/services/${service.id}/edit`}>Edit</Link>
+          </li>
+          <li>
+            <button onClick={removeServiceClick.bind(this, service.id)}>
+              Delete
+            </button>
+          </li>
+        </ul>
+        <div>Users:</div>
+        <ul>{users}</ul>
+      </div>
+    );
   }
 
   return (

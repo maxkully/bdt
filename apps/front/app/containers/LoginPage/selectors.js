@@ -1,16 +1,12 @@
-/**
- * Homepage selectors
- */
-
 import { createSelector } from 'reselect';
 import { initialState } from './reducer';
 
-const selectHome = state => state.home || initialState;
+const selectLoginPage = state => state.loginPage || initialState;
 
-const makeSelectUsername = () =>
+const makeSelectCredentials = () =>
   createSelector(
-    selectHome,
-    homeState => homeState.username,
+    selectLoginPage,
+    loginPageState => loginPageState.credentials,
   );
 
-export { selectHome, makeSelectUsername };
+export { selectLoginPage, makeSelectCredentials };

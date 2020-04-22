@@ -1,8 +1,14 @@
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects';
-import { LOAD_SUBSCRIBERS, REMOVE_SUBSCRIBER } from './constants';
-import { loadSubscribers, subscribersLoaded, subscribersLoadingError, subscriberRemoved, subscriberRemovingError } from './actions';
-
 import request from 'utils/request';
+import { push } from 'react-router-redux';
+import { LOAD_SUBSCRIBERS, REMOVE_SUBSCRIBER } from './constants';
+import {
+  loadSubscribers,
+  subscribersLoaded,
+  subscribersLoadingError,
+  subscriberRemoved,
+  subscriberRemovingError,
+} from './actions';
 
 export function* getSubscribers() {
   // Select username from store
@@ -14,6 +20,10 @@ export function* getSubscribers() {
     console.log('Loaded subscribers => ', subscribers);
     yield put(subscribersLoaded(subscribers));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscribersLoadingError(err));
   }
 }
@@ -27,6 +37,10 @@ export function* deleteSubscriber(data) {
     yield put(subscriberRemoved());
     yield put(loadSubscribers());
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRemovingError(err));
   }
 }

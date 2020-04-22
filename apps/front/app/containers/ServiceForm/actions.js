@@ -38,7 +38,6 @@ export function changeTitle(title) {
   };
 }
 
-
 export function changeDescription(description) {
   return {
     type: CHANGE_DESCRIPTION,

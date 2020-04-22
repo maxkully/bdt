@@ -22,6 +22,10 @@ export function* getSubscriber(data) {
     const response = yield call(request, requestURL);
     yield put(subscriberLoaded(response));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRequestingError(err));
   }
 }
@@ -33,6 +37,10 @@ export function* deleteSubscriber(data) {
     console.log(`Subscriber {${data.id}} successfully removed!`);
     yield put(push('/subscribers'));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRequestingError(err));
   }
 }
@@ -51,6 +59,10 @@ export function* disableServiceForSubscriber(data) {
     );
     yield put(loadSubscriber(data.data.subscriber_id));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRequestingError(err));
   }
 }

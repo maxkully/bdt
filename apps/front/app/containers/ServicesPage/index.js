@@ -25,7 +25,7 @@ export function ServicesPage({
   services,
   onPageOpened,
   removeServiceClick,
-                               enableServiceClick,
+  enableServiceClick,
   match,
 }) {
   useInjectReducer({ key, reducer });
@@ -34,24 +34,35 @@ export function ServicesPage({
 
   let actionButton;
   if (match.params.id) {
-    actionButton = serviceId => <button id={serviceId} onClick={enableServiceClick.bind(this, {
-      service_id: serviceId,
-      subscriber_id: match.params.id,
-    })}>+</button>;
+    actionButton = serviceId => (
+      <button
+        id={serviceId}
+        onClick={enableServiceClick.bind(this, {
+          service_id: serviceId,
+          subscriber_id: match.params.id,
+        })}
+      >
+        +
+      </button>
+    );
   } else {
-    actionButton = serviceId => <button id={serviceId} onClick={removeServiceClick}>X</button>;
+    actionButton = serviceId => (
+      <button id={serviceId} onClick={removeServiceClick}>
+        X
+      </button>
+    );
   }
 
   let content;
   if (services) {
-    content = services.map(item =>
+    content = services.map(item => (
       <div key={item.id}>
         {actionButton(item.id)}
         <Link to={`/services/${item.id}`}>
           {item.id} - {item.title} - {item.created_at};
         </Link>
       </div>
-    );
+    ));
   } else {
     // Otherwise render a single component
     content = <div>Nothing</div>;
@@ -61,10 +72,7 @@ export function ServicesPage({
     <article>
       <Helmet>
         <title>Services List</title>
-        <meta
-          name="description"
-          content="Services List"
-        />
+        <meta name="description" content="Services List" />
       </Helmet>
       <Wrapper>
         <Link to="/services/new">

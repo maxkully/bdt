@@ -32,14 +32,16 @@ export function SubscribersPage({
 
   let content;
   if (subscribers) {
-    content = subscribers.map(item =>
+    content = subscribers.map(item => (
       <div key={item.id}>
-        <button id={item.id} onClick={removeSubscriberClick}>X</button>
+        <button id={item.id} onClick={removeSubscriberClick}>
+          X
+        </button>
         <Link to={`/subscribers/${item.id}`}>
           {item.id} - {item.phone} - {item.locale} - {item.created_at};
         </Link>
       </div>
-    );
+    ));
   } else {
     // Otherwise render a single component
     content = <div>Nothing</div>;
@@ -49,10 +51,7 @@ export function SubscribersPage({
     <article>
       <Helmet>
         <title>Subscribers List</title>
-        <meta
-          name="description"
-          content="Big Data Technologies Homepage"
-        />
+        <meta name="description" content="Big Data Technologies Homepage" />
       </Helmet>
       <Wrapper>
         <Link to="/subscribers/new">

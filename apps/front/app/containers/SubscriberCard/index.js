@@ -1,5 +1,5 @@
 import React, { useEffect, memo } from 'react';
-import {Link, withRouter} from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { FormattedMessage } from 'react-intl';
@@ -30,7 +30,7 @@ export function SubscriberCard({
   subscriber,
   onInitPage,
   removeSubscriberClick,
-                                 disableServiceClick,
+  disableServiceClick,
   match,
 }) {
   useInjectReducer({ key, reducer });
@@ -45,40 +45,57 @@ export function SubscriberCard({
         service_id: service.id,
         subscriber_id: subscriber.id,
       };
-      return <li key={service.id}>
-        <span><Link to={`/services/${service.id}`}>{service.title}</Link></span>
-        <span> (Enabled at {service.created_at})</span>
-        <button onClick={disableServiceClick.bind(this, context)}>Disable</button>
-      </li>
+      return (
+        <li key={service.id}>
+          <span>
+            <Link to={`/services/${service.id}`}>{service.title}</Link>
+          </span>
+          <span> (Enabled at {service.created_at})</span>
+          <button onClick={disableServiceClick.bind(this, context)}>
+            Disable
+          </button>
+        </li>
+      );
     });
 
-    content = <div>
-      <ul>
-        <li>
-          <span>ID: </span><span>{subscriber.id}</span>
-        </li>
-        <li>
-          <span>Phone: </span><span>{subscriber.phone}</span>
-        </li>
-        <li>
-          <span>Locale: </span><span>{subscriber.locale}</span>
-        </li>
-        <li>
-          <span>Created at: </span><span>{subscriber.created_at}</span>
-        </li>
-        <li>
-          <Link to={`/subscribers/${subscriber.id}/edit`}>Edit</Link>
-        </li>
-        <li>
-          <button disabled={loading} onClick={removeSubscriberClick.bind(this, subscriber.id)}>Delete</button>
-        </li>
-      </ul>
-      <div>Enabled services:</div>
-      <Link to={`/subscribers/${subscriber.id}/services/enable`}>Enable New Service</Link>
-      <ul>
-        {services}
-      </ul>
-    </div>
+    content = (
+      <div>
+        <ul>
+          <li>
+            <span>ID: </span>
+            <span>{subscriber.id}</span>
+          </li>
+          <li>
+            <span>Phone: </span>
+            <span>{subscriber.phone}</span>
+          </li>
+          <li>
+            <span>Locale: </span>
+            <span>{subscriber.locale}</span>
+          </li>
+          <li>
+            <span>Created at: </span>
+            <span>{subscriber.created_at}</span>
+          </li>
+          <li>
+            <Link to={`/subscribers/${subscriber.id}/edit`}>Edit</Link>
+          </li>
+          <li>
+            <button
+              disabled={loading}
+              onClick={removeSubscriberClick.bind(this, subscriber.id)}
+            >
+              Delete
+            </button>
+          </li>
+        </ul>
+        <div>Enabled services:</div>
+        <Link to={`/subscribers/${subscriber.id}/services/enable`}>
+          Enable New Service
+        </Link>
+        <ul>{services}</ul>
+      </div>
+    );
   }
 
   return (

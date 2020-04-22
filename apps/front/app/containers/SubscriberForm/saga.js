@@ -1,5 +1,6 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import request from 'utils/request';
+import { push } from 'react-router-redux';
 import {
   LOAD_SUBSCRIBER,
   ADD_SUBSCRIBER,
@@ -45,6 +46,10 @@ export function* changeSubscriber(data) {
     });
     yield put(loadSubscriber(backId));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRequestError(err));
   }
 }
@@ -59,6 +64,10 @@ export function* getSubscriber(data) {
     const response = yield call(request, requestURL);
     yield put(subscriberLoaded(response));
   } catch (err) {
+    // @todo refactor it
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
     yield put(subscriberRequestError(err));
   }
 }

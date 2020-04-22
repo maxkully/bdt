@@ -26,6 +26,7 @@ function checkStatus(response) {
 
   const error = new Error(response.statusText);
   error.response = response;
+  error.statusCode = response.status;
   throw error;
 }
 
@@ -38,6 +39,16 @@ function checkStatus(response) {
  * @return {object}           The response data
  */
 export default function request(url, options) {
+  if (localStorage.getItem('jwt')) {
+    // eslint-disable-next-line no-param-reassign
+    options = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+      },
+      ...options,
+    };
+  }
+
   return fetch(url, options)
     .then(checkStatus)
     .then(parseJSON);

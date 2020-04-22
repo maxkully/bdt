@@ -54,7 +54,10 @@ describe('<SubscribersPage />', () => {
     render(
       <Provider store={store}>
         <IntlProvider locale="en">
-          <SubscribersPage onChangeUsername={() => {}} onSubmitForm={submitSpy} />
+          <SubscribersPage
+            onChangeUsername={() => {}}
+            onSubmitForm={submitSpy}
+          />
         </IntlProvider>
       </Provider>,
     );
