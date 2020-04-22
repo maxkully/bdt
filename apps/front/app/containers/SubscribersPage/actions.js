@@ -8,6 +8,8 @@ import {
   FILTER_BY_PHONE,
   SORTING_BY,
   LOADING_MORE,
+  FILTER_BY_DATE_FROM,
+  FILTER_BY_DATE_TO,
 } from './constants';
 
 export function loadSubscribers(query) {
@@ -55,6 +57,20 @@ export function filterByPhone(phone) {
   return {
     type: FILTER_BY_PHONE,
     phone,
+  };
+}
+
+export function filterByDateFrom(date) {
+  return {
+    type: FILTER_BY_DATE_FROM,
+    date,
+  };
+}
+
+export function filterByDateTo(date) {
+  return {
+    type: FILTER_BY_DATE_TO,
+    date,
   };
 }
 

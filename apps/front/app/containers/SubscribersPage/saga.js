@@ -1,7 +1,14 @@
 import { call, put, takeLatest, takeEvery, all, select } from 'redux-saga/effects';
 import request from 'utils/request';
 import { push } from 'react-router-redux';
-import {FILTER_BY_PHONE, LOAD_SUBSCRIBERS, LOADING_MORE, REMOVE_SUBSCRIBER, SORTING_BY} from './constants';
+import {
+  FILTER_BY_DATE_FROM, FILTER_BY_DATE_TO,
+  FILTER_BY_PHONE,
+  LOAD_SUBSCRIBERS,
+  LOADING_MORE,
+  REMOVE_SUBSCRIBER,
+  SORTING_BY
+} from './constants';
 import {
   loadSubscribers,
   subscribersLoaded,
@@ -56,9 +63,23 @@ export function* deleteSubscriber(data) {
   }
 }
 
-export function* filterSubscribers(phone) {
+export function* filterSubscribersByPhone(data) {
   const state = yield select(selectSubscribersPage);
-  state.query.filter.phone = phone.phone;
+  state.query.filter.phone = data.phone;
+  yield put(loadSubscribers(state.query));
+}
+
+export function* filterSubscribersByDateFrom(data) {
+  const state = yield select(selectSubscribersPage);
+  state.query.filter.created_at.from = data.date;
+  yield put(loadSubscribers(state.query));
+}
+
+export function* filterSubscribersByDateTo(data) {
+  const state = yield select(selectSubscribersPage);
+  // @todo: control dating
+  state.query.filter.created_at.to = data.date;
+
   yield put(loadSubscribers(state.query));
 }
 
@@ -91,7 +112,9 @@ export default function* subscribersData() {
   yield all([
     takeLatest(LOAD_SUBSCRIBERS, getSubscribers),
     takeEvery(REMOVE_SUBSCRIBER, deleteSubscriber),
-    takeLatest(FILTER_BY_PHONE, filterSubscribers),
+    takeLatest(FILTER_BY_PHONE, filterSubscribersByPhone),
+    takeLatest(FILTER_BY_DATE_FROM, filterSubscribersByDateFrom),
+    takeLatest(FILTER_BY_DATE_TO, filterSubscribersByDateTo),
     takeLatest(SORTING_BY, sortingSubscribers),
     takeLatest(LOADING_MORE, loadMoreSubscribers),
   ]);

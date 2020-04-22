@@ -15,6 +15,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { Delete, Add } from '@material-ui/icons';
 import { Input } from '@material-ui/core';
@@ -26,6 +27,8 @@ import {
   sortingBy,
   filterByPhone,
   loadMore,
+  filterByDateFrom,
+  filterByDateTo,
 } from './actions';
 import { makeSelectSubscribers, makeSelectQuery } from './selectors';
 import messages from './messages';
@@ -34,6 +37,15 @@ import Title from './Title';
 const useStyles = makeStyles(theme => ({
   seeMore: {
     marginTop: theme.spacing(3),
+  },
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: 200,
   },
 }));
 
@@ -49,6 +61,8 @@ export function SubscribersPage({
   sortingByClick,
   loadMoreClick,
   searchPhoneChange,
+  searchDateFromChange,
+  searchDateToChange,
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
@@ -57,8 +71,6 @@ export function SubscribersPage({
 
   // @todo: extract to paging block
   let loadMoreBlock = '';
-  console.log(query.paging.limit)
-  console.log(subscribers.length)
   if (query.paging.limit <= subscribers.length) {
     loadMoreBlock = (
       <div className={classes.seeMore}>
@@ -97,9 +109,35 @@ export function SubscribersPage({
         </TableHead>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={2}>&nbsp;</TableCell>
+            <TableCell colSpan={2}>
+              <form className={classes.container} noValidate>
+                <TextField
+                  id="dateFrom"
+                  label="from"
+                  type="date"
+                  value={query.filter.created_at.from}
+                  onChange={searchDateFromChange}
+                  className={classes.textField}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </form>
+            </TableCell>
             <TableCell colSpan={1}>
-              <Input type="calendar" placeholder="search by date..." />
+              <form className={classes.container} noValidate>
+                <TextField
+                  id="dateTo"
+                  label="to"
+                  type="date"
+                  value={query.filter.created_at.to}
+                  className={classes.textField}
+                  onChange={searchDateToChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </form>
             </TableCell>
             <TableCell colSpan={2}>
               <Input
@@ -142,6 +180,8 @@ SubscribersPage.propTypes = {
   sortingByClick: PropTypes.func,
   loadMoreClick: PropTypes.func,
   searchPhoneChange: PropTypes.func,
+  searchDateFromChange: PropTypes.func,
+  searchDateToChange: PropTypes.func,
 };
 
 const mapStateToProps = createStructuredSelector({
@@ -169,9 +209,15 @@ export function mapDispatchToProps(dispatch) {
     searchPhoneChange: evt => {
       dispatch(filterByPhone(evt.target.value));
     },
+    searchDateFromChange: evt => {
+      dispatch(filterByDateFrom(evt.target.value));
+    },
+    searchDateToChange: evt => {
+      dispatch(filterByDateTo(evt.target.value));
+    },
     loadMoreClick: evt => {
       dispatch(loadMore());
-    }
+    },
   };
 }
 

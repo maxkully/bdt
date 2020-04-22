@@ -23,8 +23,8 @@ export const initialState = {
     filter: {
       phone: '',
       created_at: {
-        from: '',
-        to: '',
+        from: new Date().toISOString().split('T')[0],
+        to: new Date().toISOString().split('T')[0],
       },
     },
   },
