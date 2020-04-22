@@ -2,13 +2,21 @@
 
 namespace BDT\Controller;
 
+use BDT\Entity\MobileService;
+use BDT\Message\ActionLog;
+use BDT\Repository\SubscriberRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use BDT\Entity\Subscriber;
 use BDT\Form\SubscriberType;
+use BDT\Service\Locking;
 
 /**
  * Movie controller.
@@ -16,33 +24,72 @@ use BDT\Form\SubscriberType;
  */
 class SubscribersController extends AbstractFOSRestController
 {
+    /** @var LoggerInterface */
+    private $logger;
+    private $bus;
+    /**
+     * @var SubscriberRepository
+     */
+    private $repository;
+
+    public function __construct(LoggerInterface $logger, MessageBusInterface $bus, SubscriberRepository $repository)
+    {
+        $this->logger = $logger;
+        $this->bus = $bus;
+        $this->repository = $repository;
+    }
+
+    public function log($entity, $action, $ref = null)
+    {
+        if (!$this->getUser()) {
+            throw new UnauthorizedHttpException('Current user is empty');
+        }
+
+        try {
+            if (isset($ref)) {
+                $refId = $ref->getId();
+                $refName = get_class($ref);
+            } else{
+                $refId = $refName = null;
+            }
+            $this->bus->dispatch(new ActionLog($this->getUser()->getId(), $entity->getId(), get_class($entity), $action, $refId, $refName));
+        } catch (\Exception $e) {
+            $this->logger->critical(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+        }
+    }
+
     /**
      * Lists all subscribers
      * @Rest\Get("/subscribers")
      *
      * @return Response
      */
-    public function getSubscribersAction()
+    public function getSubscribersAction(Request $request)
     {
-        // q
-        // created_at[from]
-        // created_at[to]
-        // sort_by
-        // direction
-        // page
-        // offset
-        // limit
-//        $repository = $this->getDoctrine()->getRepository(Subscriber::class);
-//        $movies = $repository->findall();
-        $response = [
-            [ 'id' => 1, 'phone' => '+79123456781', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 01, 2020)) ],
-            [ 'id' => 2, 'phone' => '+79123456782', 'locale' => 'en', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 02, 2020)) ],
-            [ 'id' => 3, 'phone' => '+79123456783', 'locale' => 'en', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 03, 2020)) ],
-            [ 'id' => 4, 'phone' => '+79123456784', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 04, 2020)) ],
-            [ 'id' => 5, 'phone' => '+79123456785', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 05, 2020)) ],
-            [ 'id' => 6, 'phone' => '+79123456786', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 06, 2020)) ],
-        ];
-        return $this->handleView($this->view($response));
+        try {
+            $response = [];
+            $filter = [
+                'created_at' => $request->query->get('created_at'),
+                'phone' => $request->query->get('phone'),
+            ];
+            $sorting = $request->query->get('sorting');
+            $paging = $request->query->get('paging');
+
+            $objects = $this->repository->list($filter, $sorting, $paging);
+
+            /** @var Subscriber $obj */
+            foreach ($objects as $obj) {
+                $response[] = $obj->serialize();
+            }
+
+            return $this->handleView($this->view($response));
+        } catch (\Exception $e) {
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -52,23 +99,31 @@ class SubscribersController extends AbstractFOSRestController
      *
      * @return Response
      */
-    public function postSubscriberAction(Request $request)
+    public function createSubscriberAction(Request $request)
     {
-        $object = new Subscriber();
-//        $form = $this->createForm(SubscriberType::class, $object);
-//        $data = json_decode($request->getContent(), true);
-//        $form->submit($data);
-//
-//        if ($form->isSubmitted() && $form->isValid()) {
-//            $em = $this->getDoctrine()->getManager();
-//            $em->persist($object);
-//            $em->flush();
-//            return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
-//        }
-//
-//        return $this->handleView($this->view($form->getErrors()));
-        $response = [ 'id' => 1, 'phone' => '+79123456781', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 01, 2020)) ];
-        return $this->handleView($this->view($response, Response::HTTP_CREATED));
+        try {
+            $obj = new Subscriber();
+            $data = json_decode($request->getContent(), true);
+            $form = $this->createForm(SubscriberType::class, $obj);
+            $form->submit($data);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($obj);
+                $em->flush();
+                $this->log($obj, ActionLog::$CREATE);
+
+                return $this->handleView($this->view($obj->serialize(), Response::HTTP_CREATED));
+            }
+
+            return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
+        } catch (UniqueConstraintViolationException $e) {
+            return $this->handleView($this->view(['message' => 'subscriber.title.unique.violation'], Response::HTTP_BAD_REQUEST));
+        } catch (\Exception $e) {
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -80,20 +135,20 @@ class SubscribersController extends AbstractFOSRestController
      */
     public function showSubscriberAction(Request $request)
     {
-        $result = [
-            'id' => $request->attributes->get('id'),
-            'phone' => '+79123456781',
-            'locale' => 'ru',
-            'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 01, 2020)),
-            'services' => [
-                [ 'id' => 11, 'title' => 'Auto Dialer', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 11, 2020)) ],
-                [ 'id' => 12, 'title' => 'Auto Response', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 12, 2020)) ],
-                [ 'id' => 13, 'title' => 'Auto Recorder', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 13, 2020)) ],
-                [ 'id' => 14, 'title' => 'Auto Definer', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 14, 2020)) ],
-            ]
-        ];
+        try {
+            /** @var Subscriber $obj */
+            $obj = $this->getDoctrine()->getRepository(Subscriber::class)->find($request->get('id'));
+            if (!$obj) {
+                return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            }
 
-        return $this->handleView($this->view($result));
+            return $this->handleView($this->view($obj->serialize(true)));
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -105,7 +160,33 @@ class SubscribersController extends AbstractFOSRestController
      */
     public function updateSubscriberAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        try {
+            /** @var Subscriber $obj */
+            $obj = $this->getDoctrine()->getRepository(Subscriber::class)->find($request->get('id'));
+            if (!$obj) {
+                return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            }
+
+            $data = json_decode($request->getContent(), true);
+            $form = $this->createForm(SubscriberType::class, $obj);
+
+            $form->submit($data);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($obj);
+                $em->flush();
+                $this->log($obj, ActionLog::$UPDATE);
+
+                return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+            }
+
+            return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -117,7 +198,25 @@ class SubscribersController extends AbstractFOSRestController
      */
     public function deleteSubscriberAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        try {
+            $em = $this->getDoctrine()->getManager();
+            $obj = $em->getRepository(Subscriber::class)->find($request->get('id'));
+
+            if (!$obj) {
+                return $this->handleView($this->view(['message' => 'subscriber.not_found'], Response::HTTP_NOT_FOUND));
+            }
+
+            $em->remove($obj);
+            $em->flush();
+            $this->log($obj, ActionLog::$DELETE);
+
+            return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -129,7 +228,44 @@ class SubscribersController extends AbstractFOSRestController
      */
     public function enableServiceAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        try {
+            /** @var Subscriber $subscriber */
+            $subscriber = $this->getDoctrine()->getRepository(Subscriber::class)->find($request->get('id'));
+            if (!$subscriber) {
+                return $this->handleView($this->view(['message' => 'subscriber.not_found'], Response::HTTP_NOT_FOUND));
+            }
+            /** @var MobileService $service */
+            $service = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('service_id'));
+            if (!$service) {
+                return $this->handleView($this->view(['message' => 'service.not_found'], Response::HTTP_NOT_FOUND));
+            }
+
+            $lock = Locking::instance()->create('subscriber.service');
+            try {
+                if ($lock->acquire()) {
+                    $subscriber->addService($service);
+
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($subscriber);
+                    $em->persist($service);
+                    $em->flush();
+
+                    $this->log($subscriber, ActionLog::$LINK, $service);
+                } else {
+                    return $this->handleView($this->view(['message' => 'subscriber.service.enable.locked'], Response::HTTP_LOCKED));
+                }
+            } finally {
+                $lock->release();
+            }
+
+            return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -141,6 +277,44 @@ class SubscribersController extends AbstractFOSRestController
      */
     public function disableServiceAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        try {
+            /** @var Subscriber $subscriber */
+            $subscriber = $this->getDoctrine()->getRepository(Subscriber::class)->find($request->get('id'));
+            if (!$subscriber) {
+                return $this->handleView($this->view(['message' => 'subscriber.not_found'], Response::HTTP_NOT_FOUND));
+            }
+            /** @var MobileService $service */
+            $service = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('service_id'));
+            if (!$service) {
+                return $this->handleView($this->view(['message' => 'service.not_found'], Response::HTTP_NOT_FOUND));
+            }
+
+            // @todo: implement thread safety tests
+            // @todo: implement through amqp
+            $lock = Locking::instance()->create('subscriber.service');
+            try {
+                if ($lock->acquire()) {
+                    $subscriber->removeService($service);
+
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($subscriber);
+                    $em->persist($service);
+                    $em->flush();
+
+                    $this->log($subscriber, ActionLog::$RELEASE, $service);
+                } else {
+                    return $this->handleView($this->view(['message' => 'subscriber.service.enable.locked'], Response::HTTP_LOCKED));
+                }
+            } finally {
+                $lock->release();
+            }
+
+            return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 }

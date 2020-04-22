@@ -36,12 +36,14 @@ export function* changeSubscriber(data) {
 
   try {
     // Call our request helper (see 'utils/request')
+    const backId = data.subscriber.id;
+    delete data.subscriber.id;
     console.log('[changeSubscriber] with body => ', data);
     yield call(request, requestURL, {
       method: 'PUT',
       body: JSON.stringify(data.subscriber),
     });
-    yield put(loadSubscriber(data.subscriber.id));
+    yield put(loadSubscriber(backId));
   } catch (err) {
     yield put(subscriberRequestError(err));
   }

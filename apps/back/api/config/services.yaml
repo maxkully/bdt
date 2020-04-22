@@ -27,3 +27,10 @@ services:
     # please note that last definitions always *replace* previous ones
     sensio_framework_extra.view.listener:
         alias: Sensio\Bundle\FrameworkExtraBundle\EventListener\TemplateListener
+
+    exception_subscriber:
+        class: BDT\Listener\ExceptionListener
+        arguments:
+            - "@logger"
+        tags:
+            - { name: kernel.event_subscriber }

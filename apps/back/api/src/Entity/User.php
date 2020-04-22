@@ -2,50 +2,24 @@
 
 namespace BDT\Entity;
 
-use BDT\Entity\Traits\TimestampableTrait;
+use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="users")
+ * @ORM\Table(name="fos_user")
  */
-class User {
-    use TimestampableTrait;
-
+class User extends BaseUser
+{
     /**
-     * @ORM\Column(type="integer")
      * @ORM\Id
+     * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    protected $id;
 
-    /**
-     * Reference to RFC https://tools.ietf.org/html/rfc5321#section-4.5.3
-     * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank()
-     *
-     */
-    private $email;
-
-    /**
-     * @ORM\Column(type="string", length=30)
-     * @Assert\NotBlank()
-     */
-    private $password;
-
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function __construct()
     {
-        return $this->id;
-    }
-    /**
-     * @param mixed $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
+        parent::__construct();
     }
 }

@@ -20,4 +20,8 @@ export default defineMessages({
     id: `${scope}.subscribers`,
     defaultMessage: 'Subscribers',
   },
+  services: {
+    id: `${scope}.services`,
+    defaultMessage: 'Services',
+  },
 });

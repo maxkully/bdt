@@ -2,15 +2,20 @@
 
 namespace BDT\Entity;
 
+use BDT\Entity\Traits\StatableTrait;
 use BDT\Entity\Traits\TimestampableTrait;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="subscribers")
+ * @ORM\HasLifecycleCallbacks
  */
 class Subscriber {
+    use StatableTrait;
     use TimestampableTrait;
 
     /**
@@ -21,30 +26,41 @@ class Subscriber {
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=15)
+     * @ORM\Column(type="string", length=15, unique=true)
      * @Assert\NotBlank()
-     *
+     * @Assert\Length(
+     *      min = 11,
+     *      max = 15,
+     *      minMessage = "Title must be at least {{ limit }} characters long",
+     *      maxMessage = "Title cannot be longer than {{ limit }} characters",
+     *      allowEmptyString = false
+     * )
+     * @Assert\Regex(pattern="/^[0-9]*$/", message="number_only")
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=2)
      * @Assert\NotBlank()
-     *
+     * @Assert\Length(
+     *      min = 2,
+     *      max = 2,
+     *      minMessage = "Title must be at least {{ limit }} characters long",
+     *      maxMessage = "Title cannot be longer than {{ limit }} characters",
+     *      allowEmptyString = false
+     * )
      */
     private $locale;
 
     /**
-     * @ORM\Column(type="string", length=30)
-     * @Assert\NotBlank()
+     * @ORM\ManyToMany(targetEntity="BDT\Entity\MobileService", inversedBy="subscribers")
      */
-    private $password;
+    private $services;
 
-    /**
-     * @ORM\Column(type="smallint")
-     * @Assert\NotBlank()
-     */
-    private $state;
+    public function __construct()
+    {
+        $this->services = new ArrayCollection();
+    }
 
     /**
      * @return mixed
@@ -53,11 +69,84 @@ class Subscriber {
     {
         return $this->id;
     }
+
     /**
-     * @param mixed $id
+     * @return mixed
      */
-    public function setId($id)
+    public function getPhone()
     {
-        $this->id = $id;
+        return $this->phone;
+    }
+
+    /**
+     * @param mixed $phone
+     */
+    public function setPhone($phone)
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocale()
+    {
+        return $this->locale;
+    }
+
+    /**
+     * @param mixed $locale
+     */
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|MobileService[]
+     */
+    public function getServices(): Collection
+    {
+        return $this->services;
+    }
+
+    public function addService(MobileService $service): self
+    {
+        if (!$this->services->contains($service)) {
+            $this->services[] = $service;
+            $service->addSubscriber($this);
+        }
+        return $this;
+    }
+
+    public function removeService(MobileService $service): self
+    {
+        if ($this->services->contains($service)) {
+            $this->services->removeElement($service);
+            $service->removeSubscriber($this);
+        }
+        return $this;
+    }
+
+    public function serialize($withRelations = false) {
+        $response = [
+            'id' => $this->getId(),
+            'phone' => $this->getPhone(),
+            'locale' => $this->getLocale(),
+            'created_at' => $this->getCreatedAt()
+        ];
+
+        if ($withRelations) {
+            $response['services'] = [];
+            foreach ($this->getServices() as $service) {
+                $response['services'][] = $service->serialize();
+            }
+        }
+
+        return $response;
     }
 }

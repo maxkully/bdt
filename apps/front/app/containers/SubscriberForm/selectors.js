@@ -13,4 +13,10 @@ const makeSelectSubscriber = () =>
     subscriberFormState => subscriberFormState.subscriber,
   );
 
-export { selectSubscriberForm, makeSelectSubscriber };
+const makeSelectLoading = () =>
+  createSelector(
+    selectSubscriberForm,
+    subscriberFormState => subscriberFormState.loading,
+  );
+
+export { selectSubscriberForm, makeSelectLoading, makeSelectSubscriber };

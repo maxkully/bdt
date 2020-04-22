@@ -2,13 +2,17 @@
 
 namespace BDT\Controller;
 
+use BDT\Entity\Log;
+use BDT\Entity\User;
+use Hoa\Exception\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use BDT\Form\MobileServiceType;
 use BDT\Entity\MobileService;
-//use BDT\Form\MobileServiceType;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * Movie controller.
@@ -17,27 +21,54 @@ use BDT\Entity\MobileService;
 class MobileServicesController extends AbstractFOSRestController
 {
     /**
+     * Lists all activities
+     * @Rest\Get("/activities")
+     *
+     * @return Response
+     */
+    public function getActivityLog(UserPasswordEncoderInterface $encoder) {
+        $response = [];
+
+        $user = $this->getDoctrine()->getRepository('\BDT\Entity\User')->findOneBy(['email' => 'm.kulyaev@axioma.lv']);
+        if (!$user) {
+            $user = new User();
+            $user->setEmail('m.kulyaev@axioma.lv');
+            $user->setPassword($encoder->encodePassword($user, 'axioma'));
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($user);
+            $em->flush();
+        }
+
+        $objects = $this->getDoctrine()
+            ->getRepository(Log::class)
+            ->findAll();
+
+        /** @var Log $obj */
+        foreach ($objects as $obj) {
+            $response[] = $obj->serialize();
+        }
+
+        return $this->handleView($this->view($response));
+    }
+
+    /**
      * Lists all services
      * @Rest\Get("/services")
      *
      * @return Response
      */
-    public function getServicesAction()
+    public function getServicesAction(Request $request)
     {
-        // q
-        // created_at[from]
-        // created_at[to]
-        // sort_by
-        // direction
-        // page
-        // offset
-        // limit
-        $response = [
-            [ 'id' => 11, 'title' => 'Auto Dialer', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 11, 2020)) ],
-            [ 'id' => 12, 'title' => 'Auto Response', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 12, 2020)) ],
-            [ 'id' => 13, 'title' => 'Auto Recorder', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 13, 2020)) ],
-            [ 'id' => 14, 'title' => 'Auto Definer', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 14, 2020)) ],
-        ];
+        $response = [];
+        $objects = $this->getDoctrine()
+            ->getRepository(MobileService::class)
+            ->findAll();
+
+        /** @var MobileService $obj */
+        foreach ($objects as $obj) {
+            $response[] = $obj->serialize();
+        }
+
         return $this->handleView($this->view($response));
     }
 
@@ -48,21 +79,26 @@ class MobileServicesController extends AbstractFOSRestController
      *
      * @return Response
      */
-    public function postServiceAction(Request $request)
+    public function createServiceAction(Request $request)
     {
-        $object = new MobileService();
-//        $form = $this->createForm(SubscriberType::class, $object);
-//        $data = json_decode($request->getContent(), true);
-//        $form->submit($data);
-//
-//        if ($form->isSubmitted() && $form->isValid()) {
-//            $em = $this->getDoctrine()->getManager();
-//            $em->persist($object);
-//            $em->flush();
-//            return $this->handleView($this->view(['status' => 'ok'], Response::HTTP_CREATED));
-//        }
-//        return $this->handleView($this->view($form->getErrors()));
-        return $this->handleView($this->view([], Response::HTTP_CREATED));
+        try {
+            $obj = new MobileService();
+            $data = json_decode($request->getContent(), true);
+            $form = $this->createForm(MobileServiceType::class, $obj);
+            $form->submit($data);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($obj);
+                $em->flush();
+                return $this->handleView($this->view($obj->serialize(), Response::HTTP_CREATED));
+            }
+
+            return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
+        } catch (\Throwable $e) {
+            return $this->handleView($this->view([
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -74,20 +110,13 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function showServiceAction(Request $request)
     {
-        $result = [
-            'id' => 11,
-            'title' => 'Auto Dialer',
-            'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 11, 2020)),
-            'users' => [
-                [ 'id' => 1, 'phone' => '+79123456781', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 01, 2020)) ],
-                [ 'id' => 2, 'phone' => '+79123456782', 'locale' => 'en', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 02, 2020)) ],
-                [ 'id' => 3, 'phone' => '+79123456783', 'locale' => 'en', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 03, 2020)) ],
-                [ 'id' => 4, 'phone' => '+79123456784', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 04, 2020)) ],
-                [ 'id' => 5, 'phone' => '+79123456785', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 05, 2020)) ],
-                [ 'id' => 6, 'phone' => '+79123456786', 'locale' => 'ru', 'created_at' => date('Y-m-d', mktime(0, 0, 0, 04, 06, 2020)) ],
-            ]
-        ];
-        return $this->handleView($this->view($result));
+        /** @var MobileService $obj */
+        $obj = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('id'));
+        if (!$obj) {
+            return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+        }
+
+        return $this->handleView($this->view($obj->serialize(true)));
     }
 
     /**
@@ -99,7 +128,30 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function updateServiceAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        try {
+            /** @var MobileService $obj */
+            $obj = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('id'));
+            if (!$obj) {
+                return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            }
+
+            $data = json_decode($request->getContent(), true);
+            $form = $this->createForm(MobileServiceType::class, $obj);
+
+            $form->submit($data);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($obj);
+                $em->flush();
+                return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+            }
+
+            return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
+        } catch (\Throwable $e) {
+            return $this->handleView($this->view([
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -111,6 +163,16 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function deleteServiceAction(Request $request)
     {
+        $em = $this->getDoctrine()->getManager();
+        $obj = $em->getRepository(MobileService::class)->find($request->get('id'));
+
+        if (!$obj) {
+            return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+        }
+
+        $em->remove($obj);
+        $em->flush();
+
         return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
     }
 
@@ -123,7 +185,7 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function enableServiceAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        throw new Exception('Not implemented');
     }
 
     /**
@@ -135,6 +197,6 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function disableServiceAction(Request $request)
     {
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        throw new Exception('Not implemented');
     }
 }

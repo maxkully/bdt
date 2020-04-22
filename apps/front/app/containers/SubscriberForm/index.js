@@ -9,9 +9,9 @@ import { createStructuredSelector } from 'reselect';
 
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
-import { makeSelectLoading, makeSelectError } from 'containers/App/selectors';
+import { makeSelectError } from 'containers/App/selectors';
 import Wrapper from 'components/List/Wrapper';
-import { makeSelectSubscriber } from './selectors';
+import { makeSelectSubscriber, makeSelectLoading } from './selectors';
 import messages from './messages';
 import {
   addSubscriber,
@@ -60,10 +60,11 @@ export function SubscriberForm({
           <label htmlFor="phone">
             <FormattedMessage {...messages.phone} />
             {/* @todo: put Phone component here */}
+            {/* @todo: validation */}
             <Input
               id="phone"
               name="phone"
-              type="text"
+              type="tel"
               placeholder="+111111111111"
               value={subscriber.phone}
               // @todo: uniqueness control
@@ -82,7 +83,9 @@ export function SubscriberForm({
               onChange={onChangeLocale}
             />
           </label>
-          <button type="submit">
+          {/* @todo: success message */}
+          {/* @todo: error message */}
+          <button type="submit" disabled={loading}>
             <FormattedMessage {...messages.submit} />
           </button>
         </Form>
@@ -119,13 +122,13 @@ export function mapDispatchToProps(dispatch) {
     onSubmitForm: evt => {
       if (evt !== undefined && evt.preventDefault) evt.preventDefault();
       // @todo: throttling & disabling
-      const data = {
-        id: evt.target.elements.subscriberId.value,
+      let data = {
         phone: evt.target.elements.phone.value,
         locale: evt.target.elements.locale.value,
       };
-      console.log('onSubmitForm event data => ', data);
-      if (data.id !== '') {
+
+      if (evt.target.elements.subscriberId.value !== '') {
+        data = { id: evt.target.elements.subscriberId.value, ...data };
         dispatch(updateSubscriber(data));
         return;
       }

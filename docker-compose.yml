@@ -52,3 +52,8 @@ services:
       - ./apps/front/:/usr/src/app
 #    depends_on:
 #      - bdt.nginx
+  bdt.redis:
+    build: ./docker/redis
+    image: bdt/redis
+    expose:
+      - 6379

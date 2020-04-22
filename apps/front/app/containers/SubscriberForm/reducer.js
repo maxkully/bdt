@@ -7,7 +7,7 @@ import {
   UPDATE_SUBSCRIBER,
   CHANGE_LOCALE,
   CHANGE_PHONE,
-  RESET_SUBSCRIBER
+  RESET_SUBSCRIBER,
 } from './constants';
 
 // The initial state of the App
@@ -47,6 +47,7 @@ const subscriberFormReducer = (state = initialState, action) =>
         break;
       case RESET_SUBSCRIBER:
         draft.subscriber = initialState.subscriber;
+        draft.loading = false;
     }
   });
 

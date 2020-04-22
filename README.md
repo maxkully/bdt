@@ -61,3 +61,11 @@ entity_id (polymorph)
 action
 cdate
 indexes: user_id (fk), entity_id, action, cdate
+
+
+composer config --global --auth github-oauth.github.com <github_personal_token>
+https://github.com/settings/tokens
+
+$ mkdir -p config/jwt
+$ openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
+$ openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
