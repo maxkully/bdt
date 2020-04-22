@@ -1,6 +1,9 @@
-export const LOAD_SUBSCRIBERS = 'bdt/App/LOAD_SUBSCRIBERS';
-export const LOAD_SUBSCRIBERS_SUCCESS = 'bdt/App/LOAD_SUBSCRIBERS_SUCCESS';
-export const LOAD_SUBSCRIBERS_ERROR = 'bdt/App/LOAD_SUBSCRIBERS_ERROR';
-export const REMOVE_SUBSCRIBER = 'bdt/App/REMOVE_SUBSCRIBER';
-export const REMOVE_SUBSCRIBER_SUCCESS = 'bdt/App/REMOVE_SUBSCRIBER_SUCCESS';
-export const REMOVE_SUBSCRIBER_ERROR = 'bdt/App/REMOVE_SUBSCRIBER_ERROR';
+export const LOAD_SUBSCRIBERS = 'bdt/SubscribersPage/LOAD_SUBSCRIBERS';
+export const LOAD_SUBSCRIBERS_SUCCESS = 'bdt/SubscribersPage/LOAD_SUBSCRIBERS_SUCCESS';
+export const LOAD_SUBSCRIBERS_ERROR = 'bdt/SubscribersPage/LOAD_SUBSCRIBERS_ERROR';
+export const REMOVE_SUBSCRIBER = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER';
+export const REMOVE_SUBSCRIBER_SUCCESS = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER_SUCCESS';
+export const REMOVE_SUBSCRIBER_ERROR = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER_ERROR';
+export const FILTER_BY_PHONE = 'bdt/SubscribersPage/FILTER_BY_PHONE';
+export const SORTING_BY = 'bdt/SubscribersPage/SORTING_BY';
+export const LOADING_MORE = 'bdt/SubscribersPage/LOADING_MORE';

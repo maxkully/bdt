@@ -78,6 +78,22 @@ class SubscribersController extends AbstractFOSRestController
 
             $objects = $this->repository->list($filter, $sorting, $paging);
 
+            // validate field
+            $columns = $this->getDoctrine()->getManager()->getClassMetadata(Subscriber::class)->getColumnNames();
+            if (!in_array($sorting['field'] ?? '', $columns)) {
+                unset($sorting['field']);
+            }
+
+            // validate and transform dates
+            $created_at = $filter['created_at'] ?? [];
+            if ($created_at['from'] !== date('Y-m-d', strtotime($created_at['from']))) {
+                unset($created_at['from']);
+            }
+            if ($created_at['to'] !== date('Y-m-d', strtotime($created_at['to']))) {
+                unset($created_at['to']);
+            }
+            $filter['created_at'] = $created_at;
+
             /** @var Subscriber $obj */
             foreach ($objects as $obj) {
                 $response[] = $obj->serialize();

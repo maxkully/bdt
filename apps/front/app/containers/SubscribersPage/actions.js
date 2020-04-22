@@ -5,35 +5,25 @@ import {
   REMOVE_SUBSCRIBER,
   REMOVE_SUBSCRIBER_ERROR,
   REMOVE_SUBSCRIBER_SUCCESS,
+  FILTER_BY_PHONE,
+  SORTING_BY,
+  LOADING_MORE,
 } from './constants';
 
-export function loadSubscribers() {
+export function loadSubscribers(query) {
   return {
     type: LOAD_SUBSCRIBERS,
+    query,
   };
 }
 
-/**
- * Dispatched when the repositories are loaded by the request saga
- *
- * @param  {array} subscribers
- *
- * @return {object}      An action object with a type of LOAD_SUBSCRIBERS_SUCCESS passing the repos
- */
-export function subscribersLoaded(subscribers) {
+export function subscribersLoaded(response) {
   return {
     type: LOAD_SUBSCRIBERS_SUCCESS,
-    subscribers,
+    response,
   };
 }
 
-/**
- * Dispatched when loading the repositories fails
- *
- * @param  {object} error The error
- *
- * @return {object}       An action object with a type of LOAD_REPOS_ERROR passing the error
- */
 export function subscribersLoadingError(error) {
   return {
     type: LOAD_SUBSCRIBERS_ERROR,
@@ -54,16 +44,29 @@ export function subscriberRemoved() {
   };
 }
 
-/**
- * Dispatched when loading the repositories fails
- *
- * @param  {object} error The error
- *
- * @return {object}       An action object with a type of LOAD_REPOS_ERROR passing the error
- */
 export function subscriberRemovingError(error) {
   return {
     type: REMOVE_SUBSCRIBER_ERROR,
     error,
+  };
+}
+
+export function filterByPhone(phone) {
+  return {
+    type: FILTER_BY_PHONE,
+    phone,
+  };
+}
+
+export function sortingBy(sorting) {
+  return {
+    type: SORTING_BY,
+    sorting,
+  };
+}
+
+export function loadMore() {
+  return {
+    type: LOADING_MORE,
   };
 }

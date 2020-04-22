@@ -5,7 +5,11 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={props =>
-      localStorage.getItem('jwt') ? ( <Component {...props} /> ) : ( <Redirect to="/login" /> )
+      localStorage.getItem('jwt') ? (
+        <Component {...props} />
+      ) : (
+        <Redirect to="/login" />
+      )
     }
   />
 );

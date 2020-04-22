@@ -11,24 +11,40 @@ import {
 // The initial state of the App
 export const initialState = {
   subscribers: [],
+  query: {
+    paging: {
+      limit: 5,
+      offset: 0,
+    },
+    sorting: {
+      field: 'created_at',
+      direction: 'desc',
+    },
+    filter: {
+      phone: '',
+      created_at: {
+        from: '',
+        to: '',
+      },
+    },
+  },
   loading: true,
 };
 
 /* eslint-disable default-case, no-param-reassign */
-const subscribersReducer = (state = initialState, action) =>
+const subscribersPageReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case LOAD_SUBSCRIBERS:
         draft.loading = true;
         draft.error = false;
-        draft.subscribers = false;
+        draft.subscribers = [];
         break;
-
       case LOAD_SUBSCRIBERS_SUCCESS:
-        draft.subscribers = action.subscribers;
+        draft.subscribers = action.response.subscribers;
+        draft.query = action.response.query || initialState.query;
         draft.loading = false;
         break;
-
       case LOAD_SUBSCRIBERS_ERROR:
         draft.error = action.error;
         draft.loading = false;
@@ -47,4 +63,4 @@ const subscribersReducer = (state = initialState, action) =>
     }
   });
 
-export default subscribersReducer;
+export default subscribersPageReducer;

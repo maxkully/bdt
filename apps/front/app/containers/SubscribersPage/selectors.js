@@ -5,12 +5,18 @@
 import { createSelector } from 'reselect';
 import { initialState } from './reducer';
 
-const selectSubscribers = state => state.subscribers || initialState;
+const selectSubscribersPage = state => state.subscribersPage || initialState;
 
 const makeSelectSubscribers = () =>
   createSelector(
-    selectSubscribers,
+    selectSubscribersPage,
     subscribersState => subscribersState.subscribers,
   );
 
-export { selectSubscribers, makeSelectSubscribers };
+const makeSelectQuery = () =>
+  createSelector(
+    selectSubscribersPage,
+    subscribersState => subscribersState.query,
+  );
+
+export { selectSubscribersPage, makeSelectSubscribers, makeSelectQuery };
