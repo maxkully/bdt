@@ -1,4 +1,4 @@
-# config/packages/fos_user.yaml
+# config/packages/user.yaml
 fos_user:
   db_driver: orm
   firewall_name: main

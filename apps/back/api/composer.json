@@ -28,6 +28,7 @@
         "symfony/yaml": "4.4.*"
     },
     "require-dev": {
+        "hautelook/alice-bundle": "^2.7"
     },
     "config": {
         "preferred-install": {

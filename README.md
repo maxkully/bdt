@@ -70,6 +70,10 @@ $ mkdir -p config/jwt
 $ openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
 $ openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
 
+bin/console hautelook:fixtures:load -n
+bin/console fos:user:create admin admin@bdt.com admin
+
+
 ### TODO List
 #### FrontEnd
 
@@ -77,3 +81,7 @@ $ openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
 * Improve logging
 * Improve phone input
 * Validation to all
+
+Fixtures
+* Resolve problem with password generation for fos_user
+* Resolve problem with uniqueness constraint when fixtures loaded
