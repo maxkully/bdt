@@ -3,7 +3,6 @@ export const LOAD_SUBSCRIBERS_SUCCESS = 'bdt/SubscribersPage/LOAD_SUBSCRIBERS_SU
 export const LOAD_SUBSCRIBERS_ERROR = 'bdt/SubscribersPage/LOAD_SUBSCRIBERS_ERROR';
 export const REMOVE_SUBSCRIBER = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER';
 export const REMOVE_SUBSCRIBER_SUCCESS = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER_SUCCESS';
-export const REMOVE_SUBSCRIBER_ERROR = 'bdt/SubscribersPage/REMOVE_SUBSCRIBER_ERROR';
 export const FILTER_BY_PHONE = 'bdt/SubscribersPage/FILTER_BY_PHONE';
 export const FILTER_BY_DATE_FROM = 'bdt/SubscribersPage/FILTER_BY_DATE_FROM';
 export const FILTER_BY_DATE_TO = 'bdt/SubscribersPage/FILTER_BY_DATE_TO';

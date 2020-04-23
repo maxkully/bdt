@@ -3,7 +3,6 @@ import {
   LOAD_SUBSCRIBERS_ERROR,
   LOAD_SUBSCRIBERS_SUCCESS,
   REMOVE_SUBSCRIBER,
-  REMOVE_SUBSCRIBER_ERROR,
   REMOVE_SUBSCRIBER_SUCCESS,
   FILTER_BY_PHONE,
   SORTING_BY,
@@ -26,10 +25,10 @@ export function subscribersLoaded(response) {
   };
 }
 
-export function subscribersLoadingError(error) {
+export function subscribersRequestingError(errors) {
   return {
     type: LOAD_SUBSCRIBERS_ERROR,
-    error,
+    errors,
   };
 }
 
@@ -43,13 +42,6 @@ export function removeSubscriber(id) {
 export function subscriberRemoved() {
   return {
     type: REMOVE_SUBSCRIBER_SUCCESS,
-  };
-}
-
-export function subscriberRemovingError(error) {
-  return {
-    type: REMOVE_SUBSCRIBER_ERROR,
-    error,
   };
 }
 

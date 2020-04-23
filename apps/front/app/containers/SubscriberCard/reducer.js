@@ -22,7 +22,6 @@ const subscriberCardReducer = (state = initialState, action) =>
     switch (action.type) {
       case LOAD_SUBSCRIBER:
         draft.loading = true;
-        draft.error = false;
         draft.subscriber = initialState.subscriber;
         break;
       case LOAD_SUBSCRIBER_SUCCESS:

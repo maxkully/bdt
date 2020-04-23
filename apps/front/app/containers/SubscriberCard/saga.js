@@ -11,6 +11,7 @@ import {
   REMOVE_SUBSCRIBER,
   DISABLE_SERVICE,
 } from './constants';
+import { serviceDisabled } from "../App/actions";
 
 export function* getSubscriber(data) {
   console.log('[getSubscriber] with data => ', data);
@@ -57,6 +58,7 @@ export function* disableServiceForSubscriber(data) {
         data.data.subscriber_id
       }}!`,
     );
+    yield put(serviceDisabled());
     yield put(loadSubscriber(data.data.subscriber_id));
   } catch (err) {
     // @todo refactor it

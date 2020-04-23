@@ -222,16 +222,16 @@ class SubscribersController extends AbstractFOSRestController
                 return $this->handleView($this->view(['message' => 'subscriber.not_found'], Response::HTTP_NOT_FOUND));
             }
 
+            $this->log($obj, ActionLog::$DELETE);
             $em->remove($obj);
             $em->flush();
-            $this->log($obj, ActionLog::$DELETE);
 
             return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
-            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+            return $this->handleView($this->view([['message' => 'error.unexpected']], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
     }
 

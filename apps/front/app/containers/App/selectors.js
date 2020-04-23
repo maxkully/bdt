@@ -21,29 +21,22 @@ const makeSelectLoading = () =>
     globalState => globalState.loading,
   );
 
-const makeSelectError = () =>
+const makeSelectErrors = () =>
   createSelector(
     selectGlobal,
-    globalState => globalState.error,
+    globalState => globalState.errors,
   );
 
-const makeSelectRepos = () =>
+const makeSelectNotifications = () =>
   createSelector(
     selectGlobal,
-    globalState => globalState.userData.repositories,
-  );
-
-const makeSelectLocation = () =>
-  createSelector(
-    selectRouter,
-    routerState => routerState.location,
+    globalState => globalState.notifications,
   );
 
 export {
   selectGlobal,
   makeSelectCurrentUser,
   makeSelectLoading,
-  makeSelectError,
-  makeSelectRepos,
-  makeSelectLocation,
+  makeSelectErrors,
+  makeSelectNotifications,
 };

@@ -1,14 +1,12 @@
 import React, { useEffect, memo } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, FormattedDate } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { createStructuredSelector } from 'reselect';
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
-import { makeSelectLoading, makeSelectError } from 'containers/App/selectors';
-
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -17,8 +15,15 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import { Delete, Add } from '@material-ui/icons';
+import { Delete, Add, ArrowUpward, ArrowDownward } from '@material-ui/icons';
 import { Input } from '@material-ui/core';
+import Collapse from '@material-ui/core/Collapse';
+import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
+import Alert from '@material-ui/lab/Alert';
+import FormattedPhone from 'components/FormattedPhone';
+import FormattedLocale from 'components/FormattedLocale';
+import TransitionAlerts from 'components/TransitionAlerts';
 import saga from './saga';
 import reducer from './reducer';
 import {
@@ -30,9 +35,18 @@ import {
   filterByDateFrom,
   filterByDateTo,
 } from './actions';
-import { makeSelectSubscribers, makeSelectQuery } from './selectors';
+import {
+  makeSelectSubscribers,
+  makeSelectQuery,
+  makeSelectLoadingPage,
+} from './selectors';
 import messages from './messages';
 import Title from './Title';
+import {
+  makeSelectLoading,
+  makeSelectErrors,
+  makeSelectNotifications,
+} from '../App/selectors';
 
 const useStyles = makeStyles(theme => ({
   seeMore: {
@@ -47,13 +61,17 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     width: 200,
   },
+  center: {
+    textAlign: 'center',
+  },
 }));
 
 const key = 'subscribersPage';
 
 export function SubscribersPage({
-  loading,
-  error,
+  loadingPage,
+  errors,
+  notifications,
   subscribers,
   query,
   onPageOpened,
@@ -69,21 +87,50 @@ export function SubscribersPage({
   useEffect(() => onPageOpened(query), []);
   const classes = useStyles();
 
+  let noRecords = <TableRow />;
+  if (!subscribers.length) {
+    noRecords = (
+      <TableRow key="notification#no-records">
+        <TableCell colSpan={6} className={classes.center}>
+          <h3>No Records</h3>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  const sortingIcon = field => {
+    if (query.sorting.field !== field) return <React.Fragment />;
+    if (query.sorting.direction === 'asc') return <ArrowUpward />;
+
+    return <ArrowDownward />;
+  };
+
   // @todo: extract to paging block
-  let loadMoreBlock = '';
+  let loadMoreBlock = <React.Fragment />;
   if (query.paging.limit <= subscribers.length) {
     loadMoreBlock = (
       <div className={classes.seeMore}>
-        <Button color="primary" onClick={loadMoreClick}>
+        <Button color="primary" onClick={loadMoreClick} disabled={loadingPage}>
           See more orders
         </Button>
       </div>
     );
   }
 
+  const headers = [
+    { id: 'id', title: 'ID' },
+    { id: 'created_at', title: 'Created At' },
+    { id: 'phone', title: 'Phone' },
+    { id: 'locale', title: 'Language' },
+  ];
+
   return (
     <React.Fragment>
       <Title>Subscribers</Title>
+
+      <TransitionAlerts items={errors} severity="error" />
+      <TransitionAlerts items={notifications} severity="success" />
+
       <div className={classes.seeMore}>
         <Link color="primary" to="/subscribers/new">
           <Add />
@@ -93,23 +140,17 @@ export function SubscribersPage({
         <TableHead>
           <TableRow>
             <TableCell>&nbsp;</TableCell>
-            <TableCell id="id" onClick={sortingByClick}>
-              ID
-            </TableCell>
-            <TableCell id="created_at" onClick={sortingByClick}>
-              Created At
-            </TableCell>
-            <TableCell id="phone" onClick={sortingByClick}>
-              Phone
-            </TableCell>
-            <TableCell id="locale" onClick={sortingByClick}>
-              Language
-            </TableCell>
+            {headers.map(row => (
+              <TableCell id={row.id} onClick={sortingByClick}>
+                {row.title}
+                {sortingIcon(row.id)}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
           <TableRow>
-            <TableCell colSpan={2}>
+            <TableCell colSpan={5}>
               <form className={classes.container} noValidate>
                 <TextField
                   id="dateFrom"
@@ -121,10 +162,13 @@ export function SubscribersPage({
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  disabled={loadingPage}
                 />
               </form>
             </TableCell>
-            <TableCell colSpan={1}>
+          </TableRow>
+          <TableRow>
+            <TableCell colSpan={3}>
               <form className={classes.container} noValidate>
                 <TextField
                   id="dateTo"
@@ -136,6 +180,7 @@ export function SubscribersPage({
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  disabled={loadingPage}
                 />
               </form>
             </TableCell>
@@ -145,22 +190,34 @@ export function SubscribersPage({
                 placeholder="search by phone..."
                 onChange={searchPhoneChange}
                 value={query.filter.phone}
+                disabled={loadingPage}
               />
             </TableCell>
           </TableRow>
+          {noRecords}
           {subscribers.map(row => (
             <TableRow key={row.id}>
               <TableCell>
-                <Button id={row.id} onClick={removeSubscriberClick}>
+                <Button
+                  id={row.id}
+                  onClick={removeSubscriberClick.bind(row.id)}
+                  disabled={loadingPage}
+                >
                   <Delete />
                 </Button>
               </TableCell>
               <TableCell>{row.id}</TableCell>
-              <TableCell>{row.created_at}</TableCell>
               <TableCell>
-                <Link to={`/subscribers/${row.id}`}>{row.phone}</Link>
+                <FormattedDate value={row.created_at} />
               </TableCell>
-              <TableCell>{row.locale}</TableCell>
+              <TableCell>
+                <Link to={`/subscribers/${row.id}`}>
+                  <FormattedPhone locale={row.locale} phone={row.phone} />
+                </Link>
+              </TableCell>
+              <TableCell>
+                <FormattedLocale locale={row.locale} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -172,7 +229,10 @@ export function SubscribersPage({
 
 SubscribersPage.propTypes = {
   loading: PropTypes.bool,
-  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
+  loadingPage: PropTypes.bool,
+  errors: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
+  notifications: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
+  messages: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
   subscribers: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
   query: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
   onPageOpened: PropTypes.func,
@@ -186,7 +246,9 @@ SubscribersPage.propTypes = {
 
 const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
-  error: makeSelectError(),
+  loadingPage: makeSelectLoadingPage(),
+  errors: makeSelectErrors(),
+  notifications: makeSelectNotifications(),
   subscribers: makeSelectSubscribers(),
   query: makeSelectQuery(),
 });
@@ -198,13 +260,14 @@ export function mapDispatchToProps(dispatch) {
     },
     removeSubscriberClick: evt => {
       // @todo: throttling & disabling
+      if (evt) evt.preventDefault();
       if (confirm('Are you sure?')) {
-        dispatch(removeSubscriber(evt.target.id));
+        dispatch(removeSubscriber(evt.currentTarget.id));
       }
     },
     sortingByClick: evt => {
-      console.log('[sortingByClick] target field => ', evt.target.id);
-      dispatch(sortingBy(evt.target.id));
+      if (evt) evt.preventDefault();
+      dispatch(sortingBy(evt.currentTarget.id));
     },
     searchPhoneChange: evt => {
       dispatch(filterByPhone(evt.target.value));
@@ -215,7 +278,7 @@ export function mapDispatchToProps(dispatch) {
     searchDateToChange: evt => {
       dispatch(filterByDateTo(evt.target.value));
     },
-    loadMoreClick: evt => {
+    loadMoreClick: () => {
       dispatch(loadMore());
     },
   };

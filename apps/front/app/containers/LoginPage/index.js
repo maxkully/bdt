@@ -9,7 +9,7 @@ import { createStructuredSelector } from 'reselect';
 
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
-import { makeSelectError, makeSelectLoading } from 'containers/App/selectors';
+import { makeSelectErrors, makeSelectLoading } from 'containers/App/selectors';
 import Wrapper from 'components/List/Wrapper';
 import { makeSelectCredentials } from './selectors';
 import messages from './messages';
@@ -65,7 +65,7 @@ LoginPage.propTypes = {
 
 const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
-  error: makeSelectError(),
+  error: makeSelectErrors(),
   credentials: makeSelectCredentials(),
 });
 

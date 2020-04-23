@@ -29,6 +29,7 @@ export function* deleteService(data) {
   try {
     yield call(request, requestURL, { method: 'DELETE' });
     console.log(`Service {${data.id}} successfully removed!`);
+
     yield put(push('/services'));
   } catch (err) {
     // @todo refactor it

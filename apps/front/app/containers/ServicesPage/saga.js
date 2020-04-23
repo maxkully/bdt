@@ -8,6 +8,8 @@ import {
   servicesRequestingError,
 } from './actions';
 
+import { serviceEnabled } from "../App/actions";
+
 export function* getServices() {
   // Select username from store
   const requestURL = `http://localhost/api/services`;
@@ -56,6 +58,7 @@ export function* enableServiceForSubscriber(data) {
         data.data.subscriber_id
       }}!`,
     );
+    yield put(serviceEnabled());
     yield put(push(`/subscribers/${data.data.subscriber_id}`));
   } catch (err) {
     // @todo refactor it
