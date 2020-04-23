@@ -34,3 +34,7 @@ services:
             - "@logger"
         tags:
             - { name: kernel.event_subscriber }
+
+    bdt.data_fixtures_faker_provider.languages_provider:
+        class: BDT\Fixtures\Faker\LanguagesProvider
+        tags: [ { name: nelmio_alice.faker.provider }]
