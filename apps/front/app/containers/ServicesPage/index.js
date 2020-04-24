@@ -17,6 +17,22 @@ import { loadServices, removeService, enableService } from './actions';
 import reducer from './reducer';
 import saga from './saga';
 import CommonTable from '../../components/CommonTable';
+import {Button} from "@material-ui/core";
+import {Add} from "@material-ui/icons";
+import {makeStyles} from "@material-ui/core/styles";
+
+const useStyles = makeStyles(theme => ({
+  seeMore: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
+  },
+  link: {
+    color: '#3f51b5',
+    textDecoration: 'none',
+    textTransform: 'uppercase',
+    fontWeight: '500',
+  },
+}));
 
 const key = 'services';
 
@@ -32,7 +48,7 @@ export function ServicesPage({
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
   useEffect(() => onPageOpened(), []);
-
+  const classes = useStyles();
   let actions = [];
   let callBack = false;
   if (match.params.id) {
@@ -61,9 +77,11 @@ export function ServicesPage({
 
   return (
     <React.Fragment>
-      <Link to="/services/new">
-        <FormattedMessage {...messages.new} />
-      </Link>
+      <div className={classes.seeMore}>
+        <Link color="primary" to="/services/new" className={classes.link}>
+          <Add /> New
+        </Link>
+      </div>
       {servicesContent}
       <Helmet>
         <title>Services List</title>

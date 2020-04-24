@@ -79,7 +79,7 @@ class MobileService {
 
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->description ?? '';
     }
 
     public function setDescription($description): self

@@ -18,6 +18,7 @@ const useStyles = makeStyles(theme => ({
 export default function TransitionAlerts({ items, severity }) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
+  console.log('TransitionAlerts items =>', items);
 
   return (
     <React.Fragment>

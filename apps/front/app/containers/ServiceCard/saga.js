@@ -17,9 +17,8 @@ export function* getService(data) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
-    } else {
-      yield put(serviceRequestingError(err));
     }
+    yield put(serviceRequestingError([{ message: err.message }]));
   }
 }
 
@@ -35,9 +34,8 @@ export function* deleteService(data) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
-    } else {
-      yield put(serviceRequestingError(err));
     }
+    yield put(serviceRequestingError([{ message: err.message }]));
   }
 }
 

@@ -26,8 +26,9 @@ export function loginSuccess(data) {
   };
 }
 
-export function loginFailed() {
+export function loginFailed(errors) {
   return {
     type: LOGIN_FAILED,
+    errors,
   };
 }

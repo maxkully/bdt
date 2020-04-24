@@ -86,7 +86,7 @@ export function SubscriberCard({
         );
       }
 
-    const services = (
+    const servicesBlock = (
       <Table size="small">
         <TableBody>
           <TableRow colSpan={3}>
@@ -126,11 +126,27 @@ export function SubscriberCard({
       </Table>
     );
 
+    let notificationsBlock = <React.Fragment />;
+    if (notifications.length || errors.length) {
+      notificationsBlock = (
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={12}>
+            <Card className={classes.card}>
+              <div className={classes.cardDetails}>
+                <CardContent>
+                  <TransitionAlerts items={notifications} severity="success" />
+                  <TransitionAlerts items={errors} severity="error" />
+                </CardContent>
+              </div>
+            </Card>
+          </Grid>
+        </Grid>
+      );
+    }
+
     content = (
       <React.Fragment>
-        <TransitionAlerts items={notifications} severity="info" />
-        <TransitionAlerts items={errors} severity="error" />
-
+        {notificationsBlock}
         <Grid container spacing={4}>
           <Grid item xs={12} md={12}>
             <Card className={classes.card}>
@@ -169,7 +185,7 @@ export function SubscriberCard({
             <Card className={classes.card}>
               <div className={classes.cardDetails}>
                 <CardContent>
-                  <ul>{services}</ul>
+                  <ul>{servicesBlock}</ul>
                 </CardContent>
               </div>
             </Card>

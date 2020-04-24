@@ -19,11 +19,11 @@ export function* checkCredentials(data) {
       yield put(push('/'));
       yield put(loginSuccess(response));
     } else {
-      yield put(loginFailed('Could not received JWT token'));
+      yield put(loginFailed([{ message: 'Could not received JWT token' }]));
     }
   } catch (err) {
     console.log('[Error]', err);
-    yield put(loginFailed(err));
+    yield put(loginFailed([{ message: err.message }]));
   }
 }
 

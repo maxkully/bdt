@@ -12,6 +12,7 @@ import {
   DISABLE_SERVICE,
 } from './constants';
 import { serviceDisabled } from "../App/actions";
+import {subscriberRemoved} from "../SubscribersPage/actions";
 
 export function* getSubscriber(data) {
   console.log('[getSubscriber] with data => ', data);
@@ -36,6 +37,7 @@ export function* deleteSubscriber(data) {
   try {
     yield call(request, requestURL, { method: 'DELETE' });
     console.log(`Subscriber {${data.id}} successfully removed!`);
+    yield put(subscriberRemoved());
     yield put(push('/subscribers'));
   } catch (err) {
     // @todo refactor it

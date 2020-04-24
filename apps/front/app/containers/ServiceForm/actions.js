@@ -4,10 +4,12 @@ import {
   CHANGE_DESCRIPTION,
   RESET_SERVICE,
   UPDATE_SERVICE,
-  LOAD_SERVICE,
-  LOAD_SERVICE_SUCCESS,
+  LOAD_SERVICE_FORM_SUCCESS,
   REMOVE_SERVICE,
-  SERVICE_ERROR,
+  SERVICE_FORM_ERROR,
+  UPDATE_SERVICE_SUCCESS,
+  ADD_SERVICE_SUCCESS,
+  LOAD_SERVICE_FORM,
 } from './constants';
 
 export function addService(data) {
@@ -47,22 +49,34 @@ export function changeDescription(description) {
 
 export function loadService(id) {
   return {
-    type: LOAD_SERVICE,
+    type: LOAD_SERVICE_FORM,
     id,
   };
 }
 
 export function serviceLoaded(data) {
   return {
-    type: LOAD_SERVICE_SUCCESS,
+    type: LOAD_SERVICE_FORM_SUCCESS,
     data,
   };
 }
 
-export function serviceRequestingError(error) {
+export function serviceAdded() {
   return {
-    type: SERVICE_ERROR,
-    error,
+    type: ADD_SERVICE_SUCCESS,
+  };
+}
+
+export function serviceUpdated() {
+  return {
+    type: UPDATE_SERVICE_SUCCESS,
+  };
+}
+
+export function serviceRequestingError(errors) {
+  return {
+    type: SERVICE_FORM_ERROR,
+    errors,
   };
 }
 

@@ -17,10 +17,6 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { Delete, Add, ArrowUpward, ArrowDownward } from '@material-ui/icons';
 import { Input } from '@material-ui/core';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import Alert from '@material-ui/lab/Alert';
 import FormattedPhone from 'components/FormattedPhone';
 import FormattedLocale from 'components/FormattedLocale';
 import TransitionAlerts from 'components/TransitionAlerts';
@@ -63,6 +59,12 @@ const useStyles = makeStyles(theme => ({
   },
   center: {
     textAlign: 'center',
+  },
+  link: {
+    color: '#3f51b5',
+    textDecoration: 'none',
+    textTransform: 'uppercase',
+    fontWeight: '500',
   },
 }));
 
@@ -132,8 +134,8 @@ export function SubscribersPage({
       <TransitionAlerts items={notifications} severity="success" />
 
       <div className={classes.seeMore}>
-        <Link color="primary" to="/subscribers/new">
-          <Add />
+        <Link color="primary" to="/subscribers/new" class={classes.link}>
+          <Add /> New
         </Link>
       </div>
       <Table size="small">

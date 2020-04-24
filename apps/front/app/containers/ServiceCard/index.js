@@ -70,46 +70,13 @@ export function ServiceCard({
     </li>
   ));
 
-  let content = '';
-  if (service) {
-    content = (
-      <div>
-        <div>Details</div>
-        <ul>
-          <li>
-            <span>ID: </span>
-            <span>{service.id}</span>
-          </li>
-          <li>
-            <span>Title: </span>
-            <span>{service.title}</span>
-          </li>
-          <li>
-            <span>Created at: </span>
-            <span>{service.created_at}</span>
-          </li>
-          <li>
-            <Link to={`/services/${service.id}/edit`}>Edit</Link>
-          </li>
-          <li>
-            <button onClick={removeServiceClick.bind(this, service.id)}>
-              Delete
-            </button>
-          </li>
-        </ul>
-        <div>Users:</div>
-        <ul>{users}</ul>
-      </div>
-    );
-  }
-
   return (
     <React.Fragment>
       <Helmet>
         <title>Service Card</title>
         <meta name="description" content="Service details" />
       </Helmet>
-      <TransitionAlerts items={notifications} severity="info" />
+      <TransitionAlerts items={notifications} severity="success" />
       <TransitionAlerts items={errors} severity="error" />
 
       <Grid container spacing={4}>
@@ -127,7 +94,7 @@ export function ServiceCard({
                   {service.description}
                 </Typography>
                 <Typography variant="subtitle1" color="primary">
-                  <Link to={`/subscribers/${service.id}/edit`} disabled={loading}>
+                  <Link to={`/services/${service.id}/edit`} disabled={loading}>
                     <Button disabled={loading}>
                       <Edit />
                     </Button>

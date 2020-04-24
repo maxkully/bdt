@@ -49,7 +49,7 @@ export function* getSubscribers(payload) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(subscribersRequestingError(err));
+    yield put(subscribersRequestingError([{ message: err.message }]));
   }
 }
 
