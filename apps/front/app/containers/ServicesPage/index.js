@@ -9,19 +9,36 @@ import { createStructuredSelector } from 'reselect';
 
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
-import { makeSelectLoading, makeSelectError } from 'containers/App/selectors';
-import Wrapper from 'components/List/Wrapper';
+import { makeSelectLoading, makeSelectErrors } from 'containers/App/selectors';
 import { makeSelectServices } from './selectors';
 import messages from './messages';
 import { loadServices, removeService, enableService } from './actions';
 import reducer from './reducer';
 import saga from './saga';
+import CommonTable from '../../components/CommonTable';
+import {Button} from "@material-ui/core";
+import {Add} from "@material-ui/icons";
+import {makeStyles} from "@material-ui/core/styles";
+import TransitionAlerts from "../../components/TransitionAlerts";
+
+const useStyles = makeStyles(theme => ({
+  seeMore: {
+    marginTop: theme.spacing(3),
+    marginBottom: theme.spacing(3),
+  },
+  link: {
+    color: '#3f51b5',
+    textDecoration: 'none',
+    textTransform: 'uppercase',
+    fontWeight: '500',
+  },
+}));
 
 const key = 'services';
 
 export function ServicesPage({
   loading,
-  error,
+  errors,
   services,
   onPageOpened,
   removeServiceClick,
@@ -30,65 +47,55 @@ export function ServicesPage({
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
-  useEffect(() => onPageOpened(), []);
-
-  let actionButton;
+  useEffect(() => onPageOpened(match.params.id), []);
+  const classes = useStyles();
+  let actions = [];
+  let callBack = false;
   if (match.params.id) {
-    actionButton = serviceId => (
-      <button
-        id={serviceId}
-        onClick={enableServiceClick.bind(this, {
-          service_id: serviceId,
-          subscriber_id: match.params.id,
-        })}
-      >
-        +
-      </button>
-    );
+    // @todo: find solution for icons
+    actions = [
+      {
+        icon: '+',
+        tooltip: 'Enable service',
+        onClick: (event, rowData) =>
+          enableServiceClick(rowData.id, match.params.id),
+      },
+    ];
   } else {
-    actionButton = serviceId => (
-      <button id={serviceId} onClick={removeServiceClick}>
-        X
-      </button>
-    );
+    callBack = removeServiceClick;
   }
 
-  let content;
-  if (services) {
-    content = services.map(item => (
-      <div key={item.id}>
-        {actionButton(item.id)}
-        <Link to={`/services/${item.id}`}>
-          {item.id} - {item.title} - {item.created_at};
-        </Link>
-      </div>
-    ));
-  } else {
-    // Otherwise render a single component
-    content = <div>Nothing</div>;
+  const columns = [
+    { title: 'Title', field: 'title', render: row => <Link to={`/services/${row.id}`}>{row.title}</Link> },
+    { title: 'Created At', field: 'created_at', type: 'date' },
+  ];
+
+  let servicesContent = <React.Fragment />;
+  if (services.length) {
+    servicesContent = <CommonTable columns={columns} data={services} onRowDelete={callBack} actions={actions} />
   }
 
   return (
-    <article>
+    <React.Fragment>
+      <TransitionAlerts items={errors} severity="error" />
+      <div className={classes.seeMore}>
+        <Link color="primary" to="/services/new" className={classes.link}>
+          <Add /> New
+        </Link>
+      </div>
+      {servicesContent}
       <Helmet>
         <title>Services List</title>
         <meta name="description" content="Services List" />
       </Helmet>
-      <Wrapper>
-        <Link to="/services/new">
-          <FormattedMessage {...messages.new} />
-        </Link>
-        <div>{content}</div>
-      </Wrapper>
-    </article>
+    </React.Fragment>
   );
 }
 
 ServicesPage.propTypes = {
   loading: PropTypes.bool,
-  error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-  repos: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
-  subscribers: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
+  errors: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
+  services: PropTypes.oneOfType([PropTypes.array, PropTypes.bool]),
   onPageOpened: PropTypes.func,
   removeServiceClick: PropTypes.func,
   enableServiceClick: PropTypes.func,
@@ -96,24 +103,23 @@ ServicesPage.propTypes = {
 
 const mapStateToProps = createStructuredSelector({
   loading: makeSelectLoading(),
-  error: makeSelectError(),
+  errors: makeSelectErrors(),
   services: makeSelectServices(),
 });
 
 export function mapDispatchToProps(dispatch) {
   return {
-    onPageOpened: evt => {
-      if (evt !== undefined && evt.preventDefault) evt.preventDefault();
-
-      dispatch(loadServices());
+    onPageOpened: subscriberId => {
+      dispatch(loadServices(subscriberId));
     },
     removeServiceClick: evt => {
       // @todo: throttling & disabling
-      dispatch(removeService(evt.target.id));
+      dispatch(removeService(evt));
     },
-    enableServiceClick: evt => {
+    // eslint-disable-next-line camelcase
+    enableServiceClick: (service_id, subscriber_id) => {
       // @todo: throttling & disabling
-      dispatch(enableService(evt));
+      dispatch(enableService({ service_id, subscriber_id }));
     },
   };
 }

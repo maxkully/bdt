@@ -1,14 +1,14 @@
 import produce from 'immer';
 import {
-  SERVICE_ERROR,
-  LOAD_SERVICE_SUCCESS,
-  LOAD_SERVICE,
+  LOAD_SERVICE_FORM,
   CHANGE_TITLE,
   CHANGE_DESCRIPTION,
   UPDATE_SERVICE,
   RESET_SERVICE,
   ADD_SERVICE,
+  LOAD_SERVICE_FORM_SUCCESS, SERVICE_FORM_ERROR,
 } from './constants';
+
 // The initial state of the App
 export const initialState = {
   service: {
@@ -16,7 +16,6 @@ export const initialState = {
     title: '',
     description: '',
   },
-  loading: true,
 };
 
 /* eslint-disable default-case, no-param-reassign */
@@ -25,18 +24,11 @@ const serviceFormReducer = (state = initialState, action) =>
     switch (action.type) {
       case UPDATE_SERVICE:
       case ADD_SERVICE:
-      case LOAD_SERVICE:
-        draft.loading = true;
-        draft.error = false;
+      case LOAD_SERVICE_FORM:
         draft.service = initialState.service;
         break;
-      case LOAD_SERVICE_SUCCESS:
-        draft.loading = false;
+      case LOAD_SERVICE_FORM_SUCCESS:
         draft.service = action.data;
-        break;
-      case SERVICE_ERROR:
-        draft.error = action.error;
-        draft.loading = false;
         break;
       case CHANGE_TITLE:
         draft.service.title = action.title;
@@ -46,6 +38,10 @@ const serviceFormReducer = (state = initialState, action) =>
         break;
       case RESET_SERVICE:
         draft.service = initialState.service;
+        break;
+      case SERVICE_FORM_ERROR:
+        draft.service = action.errors[0].data;
+        break;
     }
   });
 

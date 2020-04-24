@@ -25,6 +25,18 @@ const DEFAULT_LOCALE = 'en';
 
 // prettier-ignore
 const appLocales = [ 'en', 'ru', 'ky', 'uz' ];
+const localePhoneMap = {
+  en: '+1',
+  ru: '+7',
+  ky: '+996',
+  uz: '+998',
+};
+const languagesMap = {
+  en: 'English',
+  ru: 'Russian',
+  ky: 'Kyrgyz',
+  uz: 'Uzbek',
+};
 
 const formatTranslationMessages = (locale, messages) => {
   const defaultFormattedMessages =
@@ -47,6 +59,8 @@ const translationMessages = {
 };
 
 exports.appLocales = appLocales;
+exports.localePhoneMap = localePhoneMap;
+exports.languagesMap = languagesMap;
 exports.formatTranslationMessages = formatTranslationMessages;
 exports.translationMessages = translationMessages;
 exports.DEFAULT_LOCALE = DEFAULT_LOCALE;

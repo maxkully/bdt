@@ -6,9 +6,11 @@ import {
   ENABLE_SERVICE,
 } from './constants';
 
-export function loadServices() {
+// eslint-disable-next-line camelcase
+export function loadServices(subscriber_id) {
   return {
     type: LOAD_SERVICES,
+    subscriber_id,
   };
 }
 
@@ -19,10 +21,10 @@ export function servicesLoaded(services) {
   };
 }
 
-export function servicesRequestingError(error) {
+export function servicesRequestingError(errors) {
   return {
     type: LOAD_SERVICES_ERROR,
-    error,
+    errors,
   };
 }
 

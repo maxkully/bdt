@@ -19,4 +19,9 @@ const makeSelectQuery = () =>
     subscribersState => subscribersState.query,
   );
 
-export { selectSubscribersPage, makeSelectSubscribers, makeSelectQuery };
+const makeSelectLoadingPage = () =>
+  createSelector(
+    selectSubscribersPage,
+    subscribersState => subscribersState.loadingPage,
+  );
+export { selectSubscribersPage, makeSelectSubscribers, makeSelectQuery, makeSelectLoadingPage };

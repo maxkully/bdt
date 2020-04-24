@@ -42,13 +42,8 @@ class Subscriber {
     /**
      * @ORM\Column(type="string", length=2)
      * @Assert\NotBlank()
-     * @Assert\Length(
-     *      min = 2,
-     *      max = 2,
-     *      minMessage = "Title must be at least {{ limit }} characters long",
-     *      maxMessage = "Title cannot be longer than {{ limit }} characters",
-     *      allowEmptyString = false
-     * )
+     * @todo: fix it
+     * @Assert\Choice(choices={"en", "ru", "ky", "uz"})
      */
     private $locale;
 
@@ -88,7 +83,12 @@ class Subscriber {
         return $this;
     }
 
-    /**
+    public static function getLocales()
+    {
+        return ['en', 'ru', 'ky', 'uz'];
+    }
+
+    /**1
      * @return mixed
      */
     public function getLocale()

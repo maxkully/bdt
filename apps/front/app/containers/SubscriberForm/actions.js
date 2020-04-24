@@ -1,5 +1,5 @@
 import {
-  SUBSCRIBER_ERROR,
+  SUBSCRIBER_FORM_ERROR,
   LOAD_SUBSCRIBER,
   ADD_SUBSCRIBER,
   UPDATE_SUBSCRIBER,
@@ -38,10 +38,10 @@ export function subscriberLoaded(data) {
   };
 }
 
-export function subscriberRequestError(error) {
+export function subscriberRequestError(errors) {
   return {
-    type: SUBSCRIBER_ERROR,
-    error,
+    type: SUBSCRIBER_FORM_ERROR,
+    errors,
   };
 }
 

@@ -4,7 +4,6 @@ import {
   LOAD_SUBSCRIBERS_ERROR,
   LOAD_SUBSCRIBERS_SUCCESS,
   REMOVE_SUBSCRIBER,
-  REMOVE_SUBSCRIBER_ERROR,
   REMOVE_SUBSCRIBER_SUCCESS,
 } from './constants';
 
@@ -23,12 +22,12 @@ export const initialState = {
     filter: {
       phone: '',
       created_at: {
-        from: new Date().toISOString().split('T')[0],
+        from: new Date((new Date()).getFullYear(), 1,1).toISOString().split('T')[0],
         to: new Date().toISOString().split('T')[0],
       },
     },
   },
-  loading: true,
+  loadingPage: true,
 };
 
 /* eslint-disable default-case, no-param-reassign */
@@ -36,29 +35,21 @@ const subscribersPageReducer = (state = initialState, action) =>
   produce(state, draft => {
     switch (action.type) {
       case LOAD_SUBSCRIBERS:
-        draft.loading = true;
-        draft.error = false;
-        draft.subscribers = [];
+        draft.loadingPage = true;
         break;
       case LOAD_SUBSCRIBERS_SUCCESS:
         draft.subscribers = action.response.subscribers;
         draft.query = action.response.query || initialState.query;
-        draft.loading = false;
+        draft.loadingPage = false;
         break;
       case LOAD_SUBSCRIBERS_ERROR:
-        draft.error = action.error;
-        draft.loading = false;
+        draft.loadingPage = false;
         break;
       case REMOVE_SUBSCRIBER:
-        draft.loading = true;
-        draft.error = false;
+        draft.loadingPage = true;
         break;
       case REMOVE_SUBSCRIBER_SUCCESS:
-        draft.loading = false;
-        break;
-      case REMOVE_SUBSCRIBER_ERROR:
-        draft.error = action.error;
-        draft.loading = false;
+        draft.loadingPage = false;
         break;
     }
   });

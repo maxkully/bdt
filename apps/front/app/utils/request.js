@@ -24,8 +24,25 @@ function checkStatus(response) {
     return response;
   }
 
-  const error = new Error(response.statusText);
-  error.response = response;
+  let err = { statusText: response.statusText };
+  if (response.status >= 500 && response.status < 600) {
+    err = { message: 'unexpected.error', ...err };
+  } else if (response.status === 400) {
+    // @todo: handle errors by fields
+    err = { message: 'invalid.data', ...err };
+  } else if (response.status === 404) {
+    err = { message: 'resource.not.found', ...err };
+  } else if (response.status === 401) {
+    err = { message: 'user.not.authenticated', ...err };
+  } else if (response.status === 403) {
+    err = { message: 'user.not.authorized', ...err };
+  } else if (response.status === 429) {
+    err = { message: 'too.many.requests', ...err };
+  }
+
+  const error = new Error(err.message);
+  error.messageData = err;
+  error.response = response.bodyUsed;
   error.statusCode = response.status;
   throw error;
 }

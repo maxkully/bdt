@@ -1,4 +1,4 @@
-export const SUBSCRIBER_ERROR = 'bdt/App/SubscriberForm/SUBSCRIBER_ERROR';
+export const SUBSCRIBER_FORM_ERROR = 'bdt/App/SubscriberForm/SUBSCRIBER_FORM_ERROR';
 
 export const LOAD_SUBSCRIBER = 'bdt/App/SubscriberForm/LOAD_SUBSCRIBER';
 export const LOAD_SUBSCRIBER_SUCCESS =

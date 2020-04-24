@@ -1,22 +1,29 @@
-import { call, put, takeLatest, takeEvery, all, select } from 'redux-saga/effects';
+import {
+  call,
+  put,
+  takeLatest,
+  takeEvery,
+  all,
+  select,
+} from 'redux-saga/effects';
 import request from 'utils/request';
 import { push } from 'react-router-redux';
 import {
-  FILTER_BY_DATE_FROM, FILTER_BY_DATE_TO,
+  FILTER_BY_DATE_FROM,
+  FILTER_BY_DATE_TO,
   FILTER_BY_PHONE,
   LOAD_SUBSCRIBERS,
   LOADING_MORE,
   REMOVE_SUBSCRIBER,
-  SORTING_BY
+  SORTING_BY,
 } from './constants';
 import {
   loadSubscribers,
   subscribersLoaded,
-  subscribersLoadingError,
+  subscribersRequestingError,
   subscriberRemoved,
-  subscriberRemovingError,
 } from './actions';
-import {selectSubscribersPage} from "./selectors";
+import { selectSubscribersPage } from './selectors';
 
 export function* getSubscribers(payload) {
   const { query } = payload;
@@ -42,7 +49,7 @@ export function* getSubscribers(payload) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(subscribersLoadingError(err));
+    yield put(subscribersRequestingError([{ message: err.message }]));
   }
 }
 
@@ -52,14 +59,18 @@ export function* deleteSubscriber(data) {
   try {
     yield call(request, requestURL, { method: 'DELETE' });
     console.log(`Subscriber {${data.id}} successfully removed!`);
+    const state = yield select(selectSubscribersPage);
+
     yield put(subscriberRemoved());
-    yield put(loadSubscribers());
+    yield put(loadSubscribers(state.query));
   } catch (err) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(subscriberRemovingError(err));
+
+    console.log('error => ', err.response);
+    yield put(subscribersRequestingError([{ message: err.message }]));
   }
 }
 

@@ -20,10 +20,10 @@ export function serviceLoaded(data) {
   };
 }
 
-export function serviceRequestingError(error) {
+export function serviceRequestingError(errors) {
   return {
     type: SERVICE_ERROR,
-    error,
+    errors,
   };
 }
 

@@ -28,8 +28,8 @@ import ServiceCard from 'containers/ServiceCard/Loadable';
 import SubscriberCard from 'containers/SubscriberCard/Loadable';
 import ServiceForm from 'containers/ServiceForm/Loadable';
 import NotFoundPage from 'containers/NotFoundPage/Loadable';
-
 import Menu from 'components/Menu';
+import LocaleToggle from "containers/LocaleToggle";
 
 function Copyright() {
   return (
@@ -40,6 +40,9 @@ function Copyright() {
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
+      <section>
+        <LocaleToggle />
+      </section>
     </Typography>
   );
 }
@@ -49,6 +52,10 @@ const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
+    width: '100%',
+    '& > * + *': {
+      marginTop: theme.spacing(2),
+    },
   },
   toolbar: {
     paddingRight: 24, // keep right padding when drawer closed
