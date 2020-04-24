@@ -10,7 +10,6 @@ import { createStructuredSelector } from 'reselect';
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
 import { makeSelectErrors, makeSelectLoading } from 'containers/App/selectors';
-import Wrapper from 'components/List/Wrapper';
 import { makeSelectCredentials } from './selectors';
 import messages from './messages';
 import { loginUser, changeCredentials } from './actions';

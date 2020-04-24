@@ -10,7 +10,6 @@ import { createStructuredSelector } from 'reselect';
 import { useInjectReducer } from 'utils/injectReducer';
 import { useInjectSaga } from 'utils/injectSaga';
 import { makeSelectErrors } from 'containers/App/selectors';
-import Wrapper from 'components/List/Wrapper';
 import { makeSelectSubscriber, makeSelectLoading } from './selectors';
 import messages from './messages';
 import {
