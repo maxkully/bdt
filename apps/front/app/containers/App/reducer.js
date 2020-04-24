@@ -9,7 +9,7 @@ import {
 } from "../SubscriberCard/constants";
 import {DISABLE_SERVICE_SUCCESS, ENABLE_SERVICE_SUCCESS} from "./constants";
 import {LOGIN_FAILED, LOGIN_SUCCESS} from "../LoginPage/constants";
-import {LOAD_SERVICES, LOAD_SERVICES_SUCCESS} from "../ServicesPage/constants";
+import {LOAD_SERVICES, LOAD_SERVICES_ERROR, LOAD_SERVICES_SUCCESS} from "../ServicesPage/constants";
 import {LOAD_SERVICE, LOAD_SERVICE_SUCCESS, SERVICE_ERROR} from "../ServiceCard/constants";
 import {
   ADD_SERVICE_SUCCESS,
@@ -66,10 +66,12 @@ const appReducer = (state = initialState, action) =>
       case ENABLE_SERVICE_SUCCESS:
         draft.notifications = [{ message: 'subscriber.service.enabled' }];
         draft.errors = [];
+        draft.loading = false;
         break;
       case DISABLE_SERVICE_SUCCESS:
         draft.notifications = [{ message: 'subscriber.service.disabled' }];
         draft.errors = [];
+        draft.loading = false;
         break;
       case LOGIN_SUCCESS:
         draft.notifications = [{ message: 'user.logged.in' }];
@@ -86,6 +88,7 @@ const appReducer = (state = initialState, action) =>
       case SUBSCRIBER_FORM_ERROR:
       case SERVICE_FORM_ERROR:
       case SERVICE_ERROR:
+      case LOAD_SERVICES_ERROR:
         draft.errors = action.errors;
         draft.loading = false;
         break;

@@ -134,7 +134,7 @@ export function SubscribersPage({
       <TransitionAlerts items={notifications} severity="success" />
 
       <div className={classes.seeMore}>
-        <Link color="primary" to="/subscribers/new" class={classes.link}>
+        <Link color="primary" to="/subscribers/new" className={classes.link}>
           <Add /> New
         </Link>
       </div>
@@ -143,7 +143,7 @@ export function SubscribersPage({
           <TableRow>
             <TableCell>&nbsp;</TableCell>
             {headers.map(row => (
-              <TableCell id={row.id} onClick={sortingByClick}>
+              <TableCell key={row.id} id={row.id} onClick={sortingByClick}>
                 {row.title}
                 {sortingIcon(row.id)}
               </TableCell>
@@ -210,7 +210,7 @@ export function SubscribersPage({
               </TableCell>
               <TableCell>{row.id}</TableCell>
               <TableCell>
-                <FormattedDate value={row.created_at} />
+                <FormattedDate value={row.created_at || Date.now()} />
               </TableCell>
               <TableCell>
                 <Link to={`/subscribers/${row.id}`}>

@@ -1,7 +1,6 @@
 import produce from 'immer';
 import {
   REMOVE_SERVICE,
-  LOAD_SERVICES_ERROR,
   LOAD_SERVICES_SUCCESS,
   LOAD_SERVICES,
 } from './constants';
@@ -18,19 +17,11 @@ const servicesReducer = (state = initialState, action) =>
     switch (action.type) {
       case LOAD_SERVICES:
       case REMOVE_SERVICE:
-        draft.loading = true;
-        draft.error = false;
         draft.services = initialState.services;
         break;
 
       case LOAD_SERVICES_SUCCESS:
         draft.services = action.services;
-        draft.loading = false;
-        break;
-
-      case LOAD_SERVICES_ERROR:
-        draft.error = action.error;
-        draft.loading = false;
         break;
     }
   });

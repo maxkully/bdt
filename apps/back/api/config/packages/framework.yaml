@@ -17,5 +17,6 @@ framework:
     php_errors:
         log: true
 
+    # deprecated
     templating:
         engines: ['twig']

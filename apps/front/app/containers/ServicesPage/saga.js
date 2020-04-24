@@ -10,9 +10,10 @@ import {
 
 import { serviceEnabled } from "../App/actions";
 
-export function* getServices() {
+// eslint-disable-next-line camelcase
+export function* getServices(data) {
   // Select username from store
-  const requestURL = `http://localhost/api/services`;
+  const requestURL = `http://localhost/api/services?subscriber_id=${data.subscriber_id || ''}`;
 
   try {
     // Call our request helper (see 'utils/request')
@@ -23,9 +24,8 @@ export function* getServices() {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
-    } else {
-      yield put(servicesRequestingError(err));
     }
+    yield put(servicesRequestingError([{ message: err.message }]));
   }
 }
 
@@ -40,9 +40,8 @@ export function* deleteService(data) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
-    } else {
-      yield put(servicesRequestingError(err));
     }
+    yield put(servicesRequestingError([{ message: err.message }]));
   }
 }
 
@@ -65,7 +64,7 @@ export function* enableServiceForSubscriber(data) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(servicesRequestingError(err));
+    yield put(servicesRequestingError([{ message: err.message }]));
   }
 }
 

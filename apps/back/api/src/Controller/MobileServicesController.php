@@ -2,10 +2,10 @@
 
 namespace BDT\Controller;
 
-use BDT\Entity\Log;
-use BDT\Entity\User;
+use BDT\Repository\MobileServiceRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Hoa\Exception\Exception;
+use Predis\Client as Redis;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +14,7 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use BDT\Form\MobileServiceType;
 use BDT\Entity\MobileService;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use BDT\Service\Cache;
 
 /**
  * Movie controller.
@@ -24,41 +24,15 @@ class MobileServicesController extends AbstractFOSRestController
 {
     /** @var LoggerInterface */
     private $logger;
+    private $cache;
+    private static $CACHE_SERVICES_LIST = 'BDT>Controller>MobileServicesController>servicesList';
 
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
-    }
-
-    /**
-     * Lists all activities
-     * @Rest\Get("/activities")
-     *
-     * @return Response
-     */
-    public function getActivityLog(UserPasswordEncoderInterface $encoder) {
-        $response = [];
-
-        $user = $this->getDoctrine()->getRepository('\BDT\Entity\User')->findOneBy(['email' => 'm.kulyaev@axioma.lv']);
-        if (!$user) {
-            $user = new User();
-            $user->setEmail('m.kulyaev@axioma.lv');
-            $user->setPassword($encoder->encodePassword($user, 'axioma'));
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($user);
-            $em->flush();
-        }
-
-        $objects = $this->getDoctrine()
-            ->getRepository(Log::class)
-            ->findAll();
-
-        /** @var Log $obj */
-        foreach ($objects as $obj) {
-            $response[] = $obj->serialize();
-        }
-
-        return $this->handleView($this->view($response));
+        $redis = new Redis(getenv('REDIS_DSN'));
+        $redis->connect();
+        $this->cache = Cache::instance($redis);
     }
 
     /**
@@ -67,23 +41,33 @@ class MobileServicesController extends AbstractFOSRestController
      *
      * @return Response
      */
-    public function getServicesAction(Request $request)
+    public function getServicesAction(Request $request, MobileServiceRepository $msRepo)
     {
         try {
-            $response = [];
-            $objects = $this->getDoctrine()
-                ->getRepository(MobileService::class)
-                ->findAll();
-
-            /** @var MobileService $obj */
-            foreach ($objects as $obj) {
-                $response[] = $obj->serialize();
+            if ($request->get('subscriber_id')) {
+                $objects = [];
+                foreach ($msRepo->forSubscriber($request->get('subscriber_id')) as $obj) {
+                    $objects[] = $obj->serialize();
+                }
+                return $this->handleView($this->view($objects));
             }
+
+            $response = $this->cache->get(self::$CACHE_SERVICES_LIST, function () {
+                $objects = $this->getDoctrine()
+                    ->getRepository(MobileService::class)
+                    ->findAll();
+                /** @var MobileService $obj */
+                foreach ($objects as $obj) {
+                    $response[] = $obj->serialize();
+                }
+
+                return $objects;
+            });
 
             return $this->handleView($this->view($response));
         } catch (\Exception $e) {
             // @todo: put it common handler exception
-            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
             return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -108,6 +92,7 @@ class MobileServicesController extends AbstractFOSRestController
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($obj);
                 $em->flush();
+                $this->cache->delete(self::$CACHE_SERVICES_LIST);
                 return $this->handleView($this->view($obj->serialize(), Response::HTTP_CREATED));
             }
 
@@ -116,7 +101,7 @@ class MobileServicesController extends AbstractFOSRestController
             return $this->handleView($this->view(['message' => 'subscriber.title.unique.violation'], Response::HTTP_BAD_REQUEST));
         } catch (\Exception $e) {
             // @todo: put it common handler exception
-            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
             return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -142,7 +127,7 @@ class MobileServicesController extends AbstractFOSRestController
             return $this->handleView($this->view($obj->serialize(true)));
         } catch (\Exception $e) {
             // @todo: put it common handler exception
-            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
             return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -173,6 +158,7 @@ class MobileServicesController extends AbstractFOSRestController
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($obj);
                 $em->flush();
+                $this->cache->delete(self::$CACHE_SERVICES_LIST);
                 return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
             }
 
@@ -181,7 +167,7 @@ class MobileServicesController extends AbstractFOSRestController
             return $this->handleView($this->view(['message' => 'subscriber.title.unique.violation'], Response::HTTP_BAD_REQUEST));
         } catch (\Exception $e) {
             // @todo: put it common handler exception
-            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
             return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -207,12 +193,13 @@ class MobileServicesController extends AbstractFOSRestController
 
             $em->remove($obj);
             $em->flush();
+            $this->cache->delete(self::$CACHE_SERVICES_LIST);
 
             return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
         } catch (\Exception $e) {
             // @todo: put it common handler exception
             // @todo: repeat if connection problem exception
-            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->error($e->getMessage());
             $this->logger->debug($e->getTraceAsString());
 
             return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));

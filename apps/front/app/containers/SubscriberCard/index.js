@@ -39,6 +39,8 @@ import TableRow from "@material-ui/core/TableRow";
 import TableCell from "@material-ui/core/TableCell";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
+import {serviceEnabled} from "../App/actions";
+import {enableService} from "../ServicesPage/actions";
 
 const useStyles = makeStyles(theme => ({
   mainGrid: {
@@ -74,16 +76,17 @@ export function SubscriberCard({
 
   const classes = useStyles();
   let content = <React.Fragment />;
+
   if (subscriber) {
     let noRecords = <TableRow />;
     if (!subscriber.services.length) {
-        noRecords = (
-          <TableRow key="notification#no-records">
-            <TableCell colSpan={6} className={classes.center}>
-              <h3>No services</h3>
-            </TableCell>
-          </TableRow>
-        );
+      noRecords = (
+        <TableRow key="notification#no-records">
+          <TableCell colSpan={6} className={classes.center}>
+            <h3>No services</h3>
+          </TableCell>
+        </TableRow>
+      );
       }
 
     const servicesBlock = (
@@ -110,17 +113,17 @@ export function SubscriberCard({
                     onClick={disableServiceClick.bind(this, context)}
                     disabled={loading}
                   >
-                    <Delete/>
+                    <Delete />
                   </Button>
                 </TableCell>
                 <TableCell>
                   <Link to={`/services/${service.id}`}>{service.title}</Link>
                 </TableCell>
                 <TableCell>
-                  <FormattedDate value={service.created_at}/>
+                  <FormattedDate value={service.created_at || Date.now()}/>
                 </TableCell>
               </TableRow>
-            )
+            );
           })}
         </TableBody>
       </Table>
@@ -156,7 +159,7 @@ export function SubscriberCard({
                     <FormattedPhone phone={subscriber.phone} locale={subscriber.locale} />
                   </Typography>
                   <Typography variant="subtitle1" color="textSecondary">
-                    <FormattedDate value={subscriber.created_at || ''} />
+                    <FormattedDate value={subscriber.created_at || Date.now()} />
                   </Typography>
                   <Typography variant="subtitle1" paragraph>
                     Language: <FormattedLocale locale={subscriber.locale} />

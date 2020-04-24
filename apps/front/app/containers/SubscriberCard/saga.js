@@ -61,7 +61,7 @@ export function* disableServiceForSubscriber(data) {
       }}!`,
     );
     yield put(serviceDisabled());
-    yield put(loadSubscriber(data.data.subscriber_id));
+    yield put(push(`/subscribers/${data.data.subscriber_id}`));
   } catch (err) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {

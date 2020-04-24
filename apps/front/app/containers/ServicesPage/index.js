@@ -20,6 +20,7 @@ import CommonTable from '../../components/CommonTable';
 import {Button} from "@material-ui/core";
 import {Add} from "@material-ui/icons";
 import {makeStyles} from "@material-ui/core/styles";
+import TransitionAlerts from "../../components/TransitionAlerts";
 
 const useStyles = makeStyles(theme => ({
   seeMore: {
@@ -47,7 +48,7 @@ export function ServicesPage({
 }) {
   useInjectReducer({ key, reducer });
   useInjectSaga({ key, saga });
-  useEffect(() => onPageOpened(), []);
+  useEffect(() => onPageOpened(match.params.id), []);
   const classes = useStyles();
   let actions = [];
   let callBack = false;
@@ -77,6 +78,7 @@ export function ServicesPage({
 
   return (
     <React.Fragment>
+      <TransitionAlerts items={errors} severity="error" />
       <div className={classes.seeMore}>
         <Link color="primary" to="/services/new" className={classes.link}>
           <Add /> New
@@ -108,10 +110,8 @@ const mapStateToProps = createStructuredSelector({
 
 export function mapDispatchToProps(dispatch) {
   return {
-    onPageOpened: evt => {
-      if (evt !== undefined && evt.preventDefault) evt.preventDefault();
-
-      dispatch(loadServices());
+    onPageOpened: subscriberId => {
+      dispatch(loadServices(subscriberId));
     },
     removeServiceClick: evt => {
       // @todo: throttling & disabling
