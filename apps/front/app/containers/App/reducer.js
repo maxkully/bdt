@@ -17,6 +17,7 @@ import {
   SERVICE_FORM_ERROR,
   LOAD_SERVICE_FORM, UPDATE_SERVICE, ADD_SERVICE, LOAD_SERVICE_FORM_SUCCESS
 } from "../ServiceForm/constants";
+import {ADD_SUBSCRIBER, SUBSCRIBER_FORM_ERROR, UPDATE_SUBSCRIBER} from "../SubscriberForm/constants";
 
 // The initial state of the App
 export const initialState = {
@@ -42,6 +43,8 @@ const appReducer = (state = initialState, action) =>
       case LOAD_SERVICE_FORM:
       case UPDATE_SERVICE:
       case ADD_SERVICE:
+      case ADD_SUBSCRIBER:
+      case UPDATE_SUBSCRIBER:
         draft.loading = true;
         break;
       case UPDATE_SERVICE_SUCCESS:
@@ -80,6 +83,7 @@ const appReducer = (state = initialState, action) =>
       case LOAD_SUBSCRIBERS_ERROR:
       case LOGIN_FAILED:
       case SUBSCRIBER_ERROR:
+      case SUBSCRIBER_FORM_ERROR:
       case SERVICE_FORM_ERROR:
       case SERVICE_ERROR:
         draft.errors = action.errors;

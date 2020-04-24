@@ -8,7 +8,6 @@ import {
 } from './constants';
 import {
   subscriberLoaded,
-  loadSubscriber,
   subscriberRequestError,
 } from './actions';
 
@@ -24,9 +23,12 @@ export function* addSubscriber(data) {
       body: JSON.stringify(data.subscriber),
     });
     console.log(`Add subscriber '${response.phone}' successfully`, response);
-    yield put(subscriberLoaded(response));
+    yield put(push(`/subscribers/${response.id}`));
   } catch (err) {
-    yield put(subscriberRequestError(err));
+    if (err.statusCode === 401 || err.statusCode === 403) {
+      yield put(push('/login'));
+    }
+    yield put(subscriberRequestError([{ message: err.message }]));
   }
 }
 
@@ -44,13 +46,13 @@ export function* changeSubscriber(data) {
       method: 'PUT',
       body: JSON.stringify(data.subscriber),
     });
-    yield put(loadSubscriber(backId));
+    yield put(push(`/subscribers/${backId}`));
   } catch (err) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(subscriberRequestError(err));
+    yield put(subscriberRequestError([{ message: err.message }]));
   }
 }
 
@@ -68,7 +70,7 @@ export function* getSubscriber(data) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(subscriberRequestError(err));
+    yield put(subscriberRequestError([{ message: err.message }]));
   }
 }
 
