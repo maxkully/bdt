@@ -1,6 +1,14 @@
 Big Data Technology App
 =======================
 
+## Stack
+
+* FrontEnd: https://github.com/react-boilerplate/react-boilerplate (React, Redux, Saga)
+* BackEnd: Symfony 4.4
+* MySQL
+* Nginx (proxy)
+* Redis (caching, locking)
+
 ## Setup
 
 ```shell script
@@ -31,7 +39,7 @@ docker-compose exec bdt.back bin/console hautelook:fixtures:load -n
 docker-compose exec bdt.back bin/console fos:user:create admin admin@bdt.com admin
 
 # Execute consumer for gathering action log
-docker-compose exec bdt.back bin/console bin/console messenger:consume async
+docker-compose exec bdt.back bin/console messenger:consume async
 
 ```
 
@@ -47,6 +55,8 @@ docker-compose logs -f bdt.front
 docker-compose exec bdt.db mysql -u <USERNAME> -p<PASSWORD> <DBNAME>
 docker-compose exec bdt.redis redis-cli monitor
 ```
+
+### Database Structure
 
 users
 INT id
