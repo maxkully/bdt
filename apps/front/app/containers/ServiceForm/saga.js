@@ -22,7 +22,7 @@ export function* addService(data) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(serviceRequestingError([{ message: err.message }]));
+    yield put(serviceRequestingError([{ message: err.message, data: data.service }]));
   }
 }
 
@@ -30,10 +30,10 @@ export function* changeService(data) {
   console.log('[changeService] with data => ', data);
   // Select username from store
   const requestURL = `http://localhost/api/services/${data.service.id}`;
+  const backServiceId = data.service.id;
 
   try {
     // Call our request helper (see 'utils/request')
-    const backServiceId = data.service.id;
     delete data.service.id;
     console.log('[changeService] with body => ', data);
     yield call(request, requestURL, {
@@ -47,7 +47,8 @@ export function* changeService(data) {
     if (err.statusCode === 401 || err.statusCode === 403) {
       yield put(push('/login'));
     }
-    yield put(serviceRequestingError([{ message: err.message }]));
+    // @todo: separate unique constraint error
+    yield put(serviceRequestingError([{ message: err.message, data: { id: backServiceId, ...data.service} }]));
   }
 }
 

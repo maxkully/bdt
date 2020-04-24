@@ -6,8 +6,9 @@ import {
   UPDATE_SERVICE,
   RESET_SERVICE,
   ADD_SERVICE,
-  LOAD_SERVICE_FORM_SUCCESS,
+  LOAD_SERVICE_FORM_SUCCESS, SERVICE_FORM_ERROR,
 } from './constants';
+
 // The initial state of the App
 export const initialState = {
   service: {
@@ -37,6 +38,10 @@ const serviceFormReducer = (state = initialState, action) =>
         break;
       case RESET_SERVICE:
         draft.service = initialState.service;
+        break;
+      case SERVICE_FORM_ERROR:
+        draft.service = action.errors[0].data;
+        break;
     }
   });
 

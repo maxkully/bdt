@@ -1,6 +1,5 @@
 import produce from 'immer';
 import {
-  SUBSCRIBER_ERROR,
   LOAD_SUBSCRIBER,
   LOAD_SUBSCRIBER_SUCCESS,
   ADD_SUBSCRIBER,
@@ -39,6 +38,10 @@ const subscriberFormReducer = (state = initialState, action) =>
         break;
       case RESET_SUBSCRIBER:
         draft.subscriber = initialState.subscriber;
+        break;
+      case SUBSCRIBER_FORM_ERROR:
+        draft.service = action.errors[0].data;
+        break;
     }
   });
 

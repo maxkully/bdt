@@ -4,7 +4,9 @@ namespace BDT\Controller;
 
 use BDT\Entity\Log;
 use BDT\Entity\User;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Hoa\Exception\Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -20,6 +22,14 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class MobileServicesController extends AbstractFOSRestController
 {
+    /** @var LoggerInterface */
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * Lists all activities
      * @Rest\Get("/activities")
@@ -59,17 +69,25 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function getServicesAction(Request $request)
     {
-        $response = [];
-        $objects = $this->getDoctrine()
-            ->getRepository(MobileService::class)
-            ->findAll();
+        try {
+            $response = [];
+            $objects = $this->getDoctrine()
+                ->getRepository(MobileService::class)
+                ->findAll();
 
-        /** @var MobileService $obj */
-        foreach ($objects as $obj) {
-            $response[] = $obj->serialize();
+            /** @var MobileService $obj */
+            foreach ($objects as $obj) {
+                $response[] = $obj->serialize();
+            }
+
+            return $this->handleView($this->view($response));
+        } catch (\Exception $e) {
+            // @todo: put it common handler exception
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
-
-        return $this->handleView($this->view($response));
     }
 
     /**
@@ -94,10 +112,14 @@ class MobileServicesController extends AbstractFOSRestController
             }
 
             return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
-        } catch (\Throwable $e) {
-            return $this->handleView($this->view([
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR));
+        } catch (UniqueConstraintViolationException $e) {
+            return $this->handleView($this->view(['message' => 'subscriber.title.unique.violation'], Response::HTTP_BAD_REQUEST));
+        } catch (\Exception $e) {
+            // @todo: put it common handler exception
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -110,13 +132,21 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function showServiceAction(Request $request)
     {
-        /** @var MobileService $obj */
-        $obj = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('id'));
-        if (!$obj) {
-            return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
-        }
+        try {
+            /** @var MobileService $obj */
+            $obj = $this->getDoctrine()->getRepository(MobileService::class)->find($request->get('id'));
+            if (!$obj) {
+                return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            }
 
-        return $this->handleView($this->view($obj->serialize(true)));
+            return $this->handleView($this->view($obj->serialize(true)));
+        } catch (\Exception $e) {
+            // @todo: put it common handler exception
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -147,10 +177,14 @@ class MobileServicesController extends AbstractFOSRestController
             }
 
             return $this->handleView($this->view($form->getErrors(), Response::HTTP_BAD_REQUEST));
-        } catch (\Throwable $e) {
-            return $this->handleView($this->view([
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR));
+        } catch (UniqueConstraintViolationException $e) {
+            return $this->handleView($this->view(['message' => 'subscriber.title.unique.violation'], Response::HTTP_BAD_REQUEST));
+        } catch (\Exception $e) {
+            // @todo: put it common handler exception
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -163,17 +197,26 @@ class MobileServicesController extends AbstractFOSRestController
      */
     public function deleteServiceAction(Request $request)
     {
-        $em = $this->getDoctrine()->getManager();
-        $obj = $em->getRepository(MobileService::class)->find($request->get('id'));
+        try {
+            $em = $this->getDoctrine()->getManager();
+            $obj = $em->getRepository(MobileService::class)->find($request->get('id'));
 
-        if (!$obj) {
-            return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            if (!$obj) {
+                return $this->handleView($this->view([], Response::HTTP_NOT_FOUND));
+            }
+
+            $em->remove($obj);
+            $em->flush();
+
+            return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
+        } catch (\Exception $e) {
+            // @todo: put it common handler exception
+            // @todo: repeat if connection problem exception
+            $this->logger->error(get_class($e) . ': ' . $e->getMessage());
+            $this->logger->debug($e->getTraceAsString());
+
+            return $this->handleView($this->view(['message' => 'error.unexpected'], Response::HTTP_INTERNAL_SERVER_ERROR));
         }
-
-        $em->remove($obj);
-        $em->flush();
-
-        return $this->handleView($this->view([], Response::HTTP_NO_CONTENT));
     }
 
     /**
