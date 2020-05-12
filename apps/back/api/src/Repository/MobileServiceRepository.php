@@ -41,9 +41,11 @@ class MobileServiceRepository extends ServiceEntityRepository
             $this->logger->debug('[MobileServiceRepository:forSubscriber] for subscriber `'. $id. '` found services: '. print_r($services, 1));
         }
 
-        $qb = $this->createQueryBuilder('ms')
-            ->where('ms.id NOT IN (:services)')
-            ->setParameter('services', $services, Connection::PARAM_STR_ARRAY);
+        $qb = $this->createQueryBuilder('ms');
+        if (count($services)) {
+            $qb->where('ms.id NOT IN (:services)')
+                ->setParameter('services', $services, Connection::PARAM_STR_ARRAY);
+        }
         $query = $qb->getQuery();
 
         return $query->execute();

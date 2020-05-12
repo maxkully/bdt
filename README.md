@@ -11,6 +11,8 @@ Big Data Technology App
 
 ## Setup
 
+#### Backend
+
 ```shell script
 
 # Install project
@@ -19,28 +21,43 @@ cd project
 
 # prepare configuration
 cp .env.dist .env
-cp apps/back/app/config/parameters.yml.dist apps/back/app/config/parameters.yml
+cp apps/back/api/.env.dist apps/back/api/.env
 
-# you can change default RSA keys
-openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
-openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
+# you can change default RSA keys (optional for dev)
+openssl genpkey -out apps/back/api/config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
+openssl pkey -in apps/back/api/config/jwt/private.pem -out apps/back/api/config/jwt/public.pem -pubout
 
 # build containers
 docker-compose build --no-cache --force-rm
+# start containers
 docker-compose up
 # docker-compose up -d
+# install dependencies
 # some composer libraries requires personal github token
 # how to: https://github.com/settings/tokens
 docker-compose exec bdt.back composer config --global --auth github-oauth.github.com <github_personal_token>
 docker-compose exec bdt.back composer install
-
-# Prepare fixtures
+# prepare database
+docker-compose exec bdt.back php bin/console doctrine:schema:create
+# prepare fixtures
 docker-compose exec bdt.back bin/console hautelook:fixtures:load -n
 docker-compose exec bdt.back bin/console fos:user:create admin admin@bdt.com admin
-
-# Execute consumer for gathering action log
+# execute consumer for gathering action log
 docker-compose exec bdt.back bin/console messenger:consume async
 
+docker-compose exec bdt.back bin/console hautelook:fixtures:load -n
+```
+
+#### Frontend
+
+```shell script
+# go to frontend path
+cd apps/front
+yarn install
+yarn start
+
+# open http://localhost:3000
+# sign in by admin@bdt.com admin
 ```
 
 ### Troubleshooting
@@ -140,18 +157,18 @@ Indexes:
 * Resolve problem with password generation for fos_user
 * Resolve problem with uniqueness constraint when fixtures loaded
 
-####Benchmarking
+#### Benchmarking
 
 * Dedicated server with docker installation
 * Up to 30 million records fixtures generator
 * Configure JMeter for perform tests for back and front 
 
-####Cache
+#### Cache
 
 * Warming up cache
 * Partially invalidate cache
 
-####Monitor
+#### Monitor
 
 * Sentry or analogs (error reporting on both sides)
 * API availability

@@ -27,6 +27,7 @@ services:
       - ./apps/back/:/usr/src/app
     depends_on:
       - bdt.db
+      - bdt.redis
 
   bdt.nginx:
     image: nginx:1.15.3-alpine
@@ -40,18 +41,6 @@ services:
     depends_on:
       - bdt.back
 
-  bdt.front:
-    build:
-      context: .
-      dockerfile: docker/front/Dockerfile
-    restart: on-failure
-    env_file: .env
-    ports:
-      - "${FRONT_PORT}:3000"
-    volumes:
-      - ./apps/front/:/usr/src/app
-#    depends_on:
-#      - bdt.nginx
   bdt.redis:
     build: ./docker/redis
     image: bdt/redis

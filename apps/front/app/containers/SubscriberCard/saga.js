@@ -11,8 +11,8 @@ import {
   REMOVE_SUBSCRIBER,
   DISABLE_SERVICE,
 } from './constants';
-import { serviceDisabled } from "../App/actions";
-import {subscriberRemoved} from "../SubscribersPage/actions";
+import { serviceDisabled } from '../App/actions';
+import { subscriberRemoved } from '../SubscribersPage/actions';
 
 export function* getSubscriber(data) {
   console.log('[getSubscriber] with data => ', data);
@@ -61,7 +61,8 @@ export function* disableServiceForSubscriber(data) {
       }}!`,
     );
     yield put(serviceDisabled());
-    yield put(push(`/subscribers/${data.data.subscriber_id}`));
+    yield put(loadSubscriber(data.data.subscriber_id));
+    // yield put(push(`/subscribers/${data.data.subscriber_id}`));
   } catch (err) {
     // @todo refactor it
     if (err.statusCode === 401 || err.statusCode === 403) {
